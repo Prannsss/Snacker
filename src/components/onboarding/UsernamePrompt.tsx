@@ -47,7 +47,7 @@ export default function UsernamePrompt({ onUsernameSet }: UsernamePromptProps) {
               id="username" 
               value={name} 
               onChange={(e) => setName(e.target.value)} 
-              placeholder="e.g., FinanceGuru"
+              placeholder="e.g., Snacker"
               aria-describedby="username-error"
             />
             {error && <p id="username-error" className="text-sm text-destructive mt-1">{error}</p>}
