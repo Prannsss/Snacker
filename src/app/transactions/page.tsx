@@ -10,10 +10,10 @@ import { useAppContext } from '@/contexts/AppContext';
 import { parseISO, startOfDay, endOfDay } from 'date-fns';
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner';
 import { Button } from '@/components/ui/button';
-import { PlusCircle } from 'lucide-react';
+import { PlusCircle, FilterIcon } from 'lucide-react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ThemeToggleButton } from '@/components/shared/ThemeToggleButton'; // Added import
+import { ThemeToggleButton } from '@/components/shared/ThemeToggleButton';
 
 const LazyAddTransactionDialog = lazy(() => import('@/components/transactions/AddTransactionDialog'));
 const LazyOnboardingFlow = lazy(() => import('@/components/onboarding/OnboardingFlow'));
@@ -22,8 +22,33 @@ const LazyTransactionCalendar = lazy(() =>
 );
 
 export default function TransactionsPage() {
-  const { transactions: allTransactions, isLoadingData, userHasOnboarded, markOnboardingComplete } = useAppContext();
-  const [filters, setFilters] = useState<TransactionFilters>({});
+  const { 
+    transactions: allTransactions, 
+    isLoadingData, 
+    userHasOnboarded, 
+    markOnboardingComplete,
+    transactionPageFilters, // Get saved filters
+    saveTransactionPageFilters // Get save function
+  } = useAppContext();
+
+  // Initialize filters: try loading from context, else default
+  const [filters, setFilters] = useState<TransactionFilters>(() => {
+    if (transactionPageFilters) {
+      return {
+        ...transactionPageFilters,
+        dateFrom: transactionPageFilters.dateFrom ? parseISO(transactionPageFilters.dateFrom) : undefined,
+        dateTo: transactionPageFilters.dateTo ? parseISO(transactionPageFilters.dateTo) : undefined,
+      };
+    }
+    return {}; // Default to empty filters or a specific range like current month
+  });
+  
+  const [showFilters, setShowFilters] = useState(false); // State to control filter visibility
+
+  const handleFilterChange = (newFilters: TransactionFilters) => {
+    setFilters(newFilters);
+    saveTransactionPageFilters(newFilters); // Auto-save filters
+  };
 
   const filteredTransactions = useMemo(() => {
     return allTransactions.filter(transaction => {
@@ -38,12 +63,15 @@ export default function TransactionsPage() {
         const searchTermLower = filters.searchTerm.toLowerCase();
         const notesMatch = transaction.notes?.toLowerCase().includes(searchTermLower);
         const amountMatch = transaction.amount.toString().includes(searchTermLower);
-        // Add category name search if needed
-        if (!notesMatch && !amountMatch) return false;
+        // Category name search logic is now inside useAppContext or TransactionFilterBar's parent page.
+        // For TransactionsPage, we need to getCategoryById if not already available
+        const category = useAppContext().getCategoryById(transaction.categoryId);
+        const categoryNameMatch = category?.name.toLowerCase().includes(searchTermLower);
+        if (!notesMatch && !amountMatch && !categoryNameMatch) return false;
       }
       return true;
-    }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()); // Sort by date desc
-  }, [allTransactions, filters]);
+    }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  }, [allTransactions, filters, useAppContext]);
 
 
   if (isLoadingData) {
@@ -72,22 +100,43 @@ export default function TransactionsPage() {
       <div className="sticky top-0 z-30 bg-background/80 backdrop-blur-md shadow-sm -mx-4 md:-mx-6 pl-6 pr-4 md:pl-8 md:pr-6 py-3 mb-4">
         <PageHeader 
           title="Transactions" 
-          actions={
-            <>
-              <Suspense fallback={
-                <Button variant="default" size="lg" className="fixed bottom-20 right-4 md:static md:bottom-auto md:right-auto rounded-full p-4 shadow-lg md:rounded-md md:p-2 md:shadow-none" disabled>
-                  <PlusCircle className="h-6 w-6 md:mr-2" />
-                  <span className="hidden md:inline">Add Transaction</span>
-                </Button>
-              }>
-                <LazyAddTransactionDialog />
-              </Suspense>
-              <ThemeToggleButton />
-            </>
-          } 
+          actions={<ThemeToggleButton />} 
         />
       </div>
-      <TransactionFilterBar onFilterChange={setFilters} initialFilters={filters} />
+
+      {/* Filter Actions Bar */}
+      <div className="flex items-center justify-between pb-2 mb-4 border-b">
+        <div className="flex items-center gap-2">
+          <h3 className="text-lg font-semibold text-foreground">Filter Transactions</h3>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={() => setShowFilters(!showFilters)} 
+            aria-expanded={showFilters}
+            aria-controls="transaction-filter-controls"
+          >
+            <FilterIcon className="h-5 w-5" />
+            <span className="sr-only">{showFilters ? 'Hide filters' : 'Show filters'}</span>
+          </Button>
+        </div>
+        <div>
+          <Suspense fallback={
+            <Button variant="default" size="lg" className="fixed bottom-20 right-4 md:static md:bottom-auto md:right-auto rounded-full p-4 shadow-lg md:rounded-md md:p-2 md:shadow-none" disabled>
+              <PlusCircle className="h-6 w-6 md:mr-2" />
+              <span className="hidden md:inline">Add Transaction</span>
+            </Button>
+          }>
+            <LazyAddTransactionDialog />
+          </Suspense>
+        </div>
+      </div>
+      
+      <TransactionFilterBar 
+        showFilters={showFilters}
+        onFilterChange={handleFilterChange} 
+        initialFilters={filters} 
+      />
+
       <Suspense fallback={
         <div className="grid md:grid-cols-2 gap-6">
           <Card className="shadow-lg">
