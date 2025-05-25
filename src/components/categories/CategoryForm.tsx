@@ -17,23 +17,12 @@ import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useAppContext } from "@/contexts/AppContext";
 import type { Category } from "@/lib/types";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import * as LucideIcons from "lucide-react"; // Import all icons
 import type { ReactNode } from "react";
-
-// Filter for actual icon components (functions starting with an uppercase letter)
-const iconNames = Object.keys(LucideIcons)
-  .filter(key => {
-    const member = LucideIcons[key as keyof typeof LucideIcons];
-    return typeof member === 'function' && /^[A-Z]/.test(key) && key !== 'createLucideIcon';
-  })
-  .sort();
-
 
 const formSchema = z.object({
   name: z.string().min(1, "Category name is required.").max(50, "Name too long"),
   type: z.enum(["income", "expense"], { required_error: "Type is required." }),
-  icon: z.string().min(1, "Icon is required."),
+  // Icon field removed from schema
 });
 
 type CategoryFormValues = z.infer<typeof formSchema>;
@@ -42,7 +31,7 @@ interface CategoryFormProps {
   category?: Category;
   onSubmitSuccess?: () => void;
   dialogFooter?: ReactNode;
-  formId?: string; // Added formId prop
+  formId?: string;
 }
 
 export function CategoryForm({ category, onSubmitSuccess, dialogFooter, formId }: CategoryFormProps) {
@@ -50,34 +39,23 @@ export function CategoryForm({ category, onSubmitSuccess, dialogFooter, formId }
 
   const form = useForm<CategoryFormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: category || {
+    defaultValues: category ? { name: category.name, type: category.type } : {
       name: "",
       type: "expense",
-      icon: "Tag", // Default icon
     },
   });
 
   function onSubmit(data: CategoryFormValues) {
     if (category) {
+      // When updating, ensure existing icon is preserved if not part of form data
       updateCategory({ ...category, ...data });
     } else {
+      // addCategory in context will assign a default icon if not provided
       addCategory(data);
     }
     onSubmitSuccess?.();
     if(!category) form.reset();
   }
-  
-  const IconComponent = ({ iconName }: {iconName: string}) => {
-    const IconCandidate = LucideIcons[iconName as keyof typeof LucideIcons];
-
-    if (typeof IconCandidate === 'function') {
-      const Icon = IconCandidate as LucideIcons.LucideIcon;
-      return <Icon className="mr-2 h-4 w-4" />;
-    }
-    // Fallback if not a function or not found
-    return <LucideIcons.Tag className="mr-2 h-4 w-4 text-muted-foreground" />;
-  };
-
 
   return (
     <Form {...form}>
@@ -127,31 +105,7 @@ export function CategoryForm({ category, onSubmitSuccess, dialogFooter, formId }
           )}
         />
 
-        <FormField
-          control={form.control}
-          name="icon"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Icon</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select an icon" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent className="max-h-60">
-                  {iconNames.map((iconName) => (
-                    <SelectItem key={iconName} value={iconName} className="flex items-center">
-                      <IconComponent iconName={iconName} />
-                       <span>{iconName}</span>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        {/* Icon Selection Field Removed */}
         
         {dialogFooter || <Button type="submit" className="w-full">{category ? "Update" : "Add"} Category</Button>}
       </form>
