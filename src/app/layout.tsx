@@ -5,7 +5,6 @@ import './globals.css';
 import { AppProviders } from '@/components/shared/AppProviders';
 import { Toaster } from '@/components/ui/toaster';
 import { MainAppShell } from '@/components/shared/MainAppShell';
-import { AppInitializer } from '@/components/shared/AppInitializer';
 import { cn } from '@/lib/utils';
 
 const geistSans = Geist({
@@ -37,9 +36,8 @@ export default function RootLayout({
         )}
       >
         <AppProviders>
-          <AppInitializer> {/* Wrap MainAppShell and children */}
-            <MainAppShell>{children}</MainAppShell>
-          </AppInitializer>
+          {/* AppInitializer has been removed */}
+          <MainAppShell>{children}</MainAppShell>
           <Toaster />
         </AppProviders>
       </body>
