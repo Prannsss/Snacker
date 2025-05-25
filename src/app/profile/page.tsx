@@ -18,8 +18,6 @@ import { useToast } from '@/hooks/use-toast';
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner';
 import { LOCAL_STORAGE_KEY } from '@/lib/constants';
 import Image from 'next/image'; // Keep for NextImage if used elsewhere, not for AvatarImage src
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
 import { formatCurrency } from '@/lib/utils';
 
 
@@ -172,52 +170,88 @@ export default function ProfilePage() {
       return;
     }
 
-    const doc = new jsPDF();
     const reportDate = format(new Date(), "MMMM d, yyyy");
     const filterDateFromString = reportFilters.dateFrom ? format(reportFilters.dateFrom, "MMM d, yyyy") : 'Start';
     const filterDateToString = reportFilters.dateTo ? format(reportFilters.dateTo, "MMM d, yyyy") : 'End';
-
-    doc.setFontSize(18);
-    doc.text("Snacker Expense Report", 14, 22);
-    doc.setFontSize(11);
-    doc.setTextColor(100);
-    doc.text(`Generated on: ${reportDate}`, 14, 29);
-    doc.text(`Filters Applied: ${filterDateFromString} to ${filterDateToString}`, 14, 36);
+    
+    let categoryFilterText = "";
     if (reportFilters.categoryId) {
       const cat = getCategoryById(reportFilters.categoryId);
-      doc.text(`Category: ${cat ? cat.name : 'Unknown'}`, 14, 43)
+      categoryFilterText = `<li>Category: ${cat ? cat.name : 'Unknown'}</li>`;
     }
 
-
-    const tableColumn = ["Date", "Category", "Amount", "Notes"];
-    const tableRows: (string | number)[][] = [];
+    let htmlContent = `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Snacker Expense Report</title>
+        <style>
+          body { font-family: sans-serif; margin: 20px; color: #333; }
+          h1 { color: #33691E; }
+          p { font-size: 0.9em; color: #555; }
+          ul { padding-left: 0; list-style: none; font-size: 0.9em; color: #555; }
+          table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+          th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+          th { background-color: #F1F8E9; color: #33691E; }
+          tr:nth-child(even) { background-color: #f9f9f9; }
+        </style>
+      </head>
+      <body>
+        <h1>Snacker Expense Report</h1>
+        <p>Generated on: ${reportDate}</p>
+        <p>Filters Applied:</p>
+        <ul>
+          <li>Date Range: ${filterDateFromString} to ${filterDateToString}</li>
+          ${categoryFilterText}
+        </ul>
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Category</th>
+              <th>Amount</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+    `;
 
     filteredExpenses.forEach(tx => {
       const categoryName = getCategoryById(tx.categoryId)?.name || "N/A";
       const notes = tx.notes || "";
-      const transactionData = [
-        format(parseISO(tx.date), "yyyy-MM-dd"),
-        categoryName,
-        formatCurrency(tx.amount), 
-        notes
-      ];
-      tableRows.push(transactionData);
+      htmlContent += `
+            <tr>
+              <td>${format(parseISO(tx.date), "yyyy-MM-dd")}</td>
+              <td>${categoryName}</td>
+              <td>${formatCurrency(tx.amount)}</td>
+              <td>${notes}</td>
+            </tr>
+      `;
     });
 
-    autoTable(doc, {
-      head: [tableColumn],
-      body: tableRows,
-      startY: reportFilters.categoryId ? 50 : 43, // Adjust startY based on whether category filter text is present
-      headStyles: { fillColor: [30, 105, 30] }, // Deep Green color for header
-      styles: { font: "helvetica", fontSize: 10 },
-      alternateRowStyles: { fillColor: [241, 248, 233] }, // Light green for alternate rows
-    });
-    
-    doc.save(`snacker_expense_report_${format(new Date(), "yyyyMMdd_HHmmss")}.pdf`);
+    htmlContent += `
+          </tbody>
+        </table>
+      </body>
+      </html>
+    `;
+
+    const blob = new Blob([htmlContent], { type: 'text/html' });
+    const href = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = href;
+    const filename = `snacker_${format(new Date(), "MM-dd-yy")}.html`;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(href);
 
     toast({
       title: "Report Downloaded",
-      description: "Your expense report has been successfully downloaded as a PDF.",
+      description: `Your expense report has been successfully downloaded as ${filename}.`,
     });
 
   }, [filteredExpenses, getCategoryById, toast, reportFilters.dateFrom, reportFilters.dateTo, reportFilters.categoryId]);
@@ -347,7 +381,7 @@ export default function ProfilePage() {
       <Card className="shadow-sm">
         <CardHeader>
           <CardTitle>Download Expense Report</CardTitle>
-          <CardDescription>Filter and download your expense transactions as a PDF file.</CardDescription>
+          <CardDescription>Filter and download your expense transactions as an HTML file.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <TransactionFilterBar 
@@ -360,7 +394,7 @@ export default function ProfilePage() {
         </CardContent>
         <CardFooter>
           <Button onClick={handleDownloadReport} disabled={filteredExpenses.length === 0}>
-            <Download className="mr-2 h-4 w-4" /> Download PDF Report
+            <Download className="mr-2 h-4 w-4" /> Download HTML Report
           </Button>
         </CardFooter>
       </Card>
