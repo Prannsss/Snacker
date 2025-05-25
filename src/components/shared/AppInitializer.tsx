@@ -25,7 +25,7 @@ export function AppInitializer({ children }: AppInitializerProps) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-background">
         <Image
-          src="/logo/Snaker.png" // Updated path
+          src="/logo/Snacker.png" // Updated path
           alt="Snacker App Logo"
           width={150}
           height={150}
