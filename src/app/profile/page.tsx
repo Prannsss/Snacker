@@ -160,19 +160,6 @@ export default function ProfilePage() {
 
       <Card className="shadow-sm">
         <CardHeader>
-          <CardTitle>Manage Data</CardTitle>
-          <CardDescription>Manage your application data stored in your browser.</CardDescription>
-        </CardHeader>
-        <CardContent>
-           <Button variant="destructive" onClick={handleManageData}>Clear All App Data</Button>
-           <p className="text-sm text-muted-foreground mt-2">
-             Warning: This will remove all your transactions, categories, and onboarding status permanently.
-           </p>
-        </CardContent>
-      </Card>
-
-      <Card className="shadow-sm">
-        <CardHeader>
           <CardTitle>Download Expense Report</CardTitle>
           <CardDescription>Filter and download your expense transactions as a CSV file.</CardDescription>
         </CardHeader>
@@ -190,6 +177,19 @@ export default function ProfilePage() {
             <Download className="mr-2 h-4 w-4" /> Download Report
           </Button>
         </CardFooter>
+      </Card>
+
+      <Card className="shadow-sm">
+        <CardHeader>
+          <CardTitle>Manage Data</CardTitle>
+          <CardDescription>Manage your application data stored in your browser.</CardDescription>
+        </CardHeader>
+        <CardContent>
+           <Button variant="destructive" onClick={handleManageData}>Clear All App Data</Button>
+           <p className="text-sm text-muted-foreground mt-2">
+             Warning: This will remove all your transactions, categories, and onboarding status permanently.
+           </p>
+        </CardContent>
       </Card>
     </PageWrapper>
   );
