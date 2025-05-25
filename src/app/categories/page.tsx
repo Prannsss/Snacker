@@ -46,8 +46,9 @@ export default function CategoriesPage() {
           title="Manage Categories" 
           actions={
             <Suspense fallback={
-              <Button disabled>
-                <PlusCircle className="mr-2 h-4 w-4" /> Add Category
+              <Button variant="default" size="lg" className="fixed bottom-20 right-4 md:static md:bottom-auto md:right-auto rounded-full p-4 shadow-lg md:rounded-md md:p-2 md:shadow-none" disabled>
+                <PlusCircle className="h-6 w-6 md:mr-2" />
+                <span className="hidden md:inline">Add Category</span>
               </Button>
             }>
               <LazyAddCategoryDialog />
