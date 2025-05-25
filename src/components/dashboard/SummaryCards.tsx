@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -36,7 +37,7 @@ export function SummaryCards({ currentMonth }: SummaryCardsProps) {
       </Card>
 
       {/* Bottom Row: Income and Expense Cards in a grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-4"> {/* Changed from grid-cols-1 md:grid-cols-2 */}
         {/* Income Card */}
         <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
           <CardContent className="pt-4 pb-4 text-center">
