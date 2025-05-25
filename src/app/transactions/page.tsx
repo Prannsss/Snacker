@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState, useMemo, useEffect, Suspense, lazy } from 'react';
+import React, { useState, useMemo, useEffect, Suspense, lazy, useCallback } from 'react'; // Added useCallback
 import { PageWrapper } from '@/components/shared/PageWrapper';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { TransactionList } from '@/components/transactions/TransactionList';
@@ -28,7 +28,8 @@ export default function TransactionsPage() {
     userHasOnboarded, 
     markOnboardingComplete,
     transactionPageFilters, // Get saved filters
-    saveTransactionPageFilters // Get save function
+    saveTransactionPageFilters, // Get save function
+    getCategoryById // Added for useMemo dependency
   } = useAppContext();
 
   // Initialize filters: try loading from context, else default
@@ -45,10 +46,12 @@ export default function TransactionsPage() {
   
   const [showFilters, setShowFilters] = useState(false); // State to control filter visibility
 
-  const handleFilterChange = (newFilters: TransactionFilters) => {
+  const handleFilterChange = useCallback((newFilters: TransactionFilters) => {
     setFilters(newFilters);
-    saveTransactionPageFilters(newFilters); // Auto-save filters
-  };
+    if (saveTransactionPageFilters) { // Guard against saveTransactionPageFilters being undefined initially
+        saveTransactionPageFilters(newFilters); // Auto-save filters
+    }
+  }, [saveTransactionPageFilters]); // setFilters from useState is stable
 
   const filteredTransactions = useMemo(() => {
     return allTransactions.filter(transaction => {
@@ -63,15 +66,13 @@ export default function TransactionsPage() {
         const searchTermLower = filters.searchTerm.toLowerCase();
         const notesMatch = transaction.notes?.toLowerCase().includes(searchTermLower);
         const amountMatch = transaction.amount.toString().includes(searchTermLower);
-        // Category name search logic is now inside useAppContext or TransactionFilterBar's parent page.
-        // For TransactionsPage, we need to getCategoryById if not already available
-        const category = useAppContext().getCategoryById(transaction.categoryId);
+        const category = getCategoryById(transaction.categoryId); // Use getCategoryById from context
         const categoryNameMatch = category?.name.toLowerCase().includes(searchTermLower);
         if (!notesMatch && !amountMatch && !categoryNameMatch) return false;
       }
       return true;
     }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  }, [allTransactions, filters, useAppContext]);
+  }, [allTransactions, filters, getCategoryById]); // Added getCategoryById
 
 
   if (isLoadingData) {
