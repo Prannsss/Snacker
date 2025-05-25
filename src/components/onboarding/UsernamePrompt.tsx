@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PageWrapper } from '@/components/shared/PageWrapper';
 import { SmilePlus } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface UsernamePromptProps {
   onUsernameSet: (name: string) => void;
@@ -31,7 +32,7 @@ export default function UsernamePrompt({ onUsernameSet }: UsernamePromptProps) {
   };
 
   return (
-    <PageWrapper className="flex items-center justify-center min-h-screen bg-gradient-to-br from-primary/10 via-background to-background">
+    <PageWrapper className="flex items-center justify-center min-h-screen bg-gradient-to-br from-primary/10 via-background to-background relative">
       <Card className="w-full max-w-md shadow-2xl bg-card/[.40] backdrop-blur-xl">
         <CardHeader className="text-center">
           <SmilePlus className="w-16 h-16 mx-auto mb-4 text-primary" />
@@ -59,6 +60,7 @@ export default function UsernamePrompt({ onUsernameSet }: UsernamePromptProps) {
           </Button>
         </CardFooter>
       </Card>
+      <p className="absolute bottom-4 w-full text-center text-xs text-muted-foreground">Developed by France Laurence Velarde</p>
     </PageWrapper>
   );
 }
