@@ -19,7 +19,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { CalendarIcon } from "lucide-react"; // Keep specific import if only one is needed
+import { CalendarIcon } from "lucide-react"; 
 import { cn, formatCurrency, parseCurrency } from "@/lib/utils";
 import { format, parseISO } from 'date-fns';
 import { useAppContext } from "@/contexts/AppContext";
@@ -44,9 +44,10 @@ interface TransactionFormProps {
   transaction?: Transaction;
   onSubmitSuccess?: () => void;
   dialogFooter?: ReactNode;
+  formId?: string; // Added formId prop
 }
 
-export function TransactionForm({ transaction, onSubmitSuccess, dialogFooter }: TransactionFormProps) {
+export function TransactionForm({ transaction, onSubmitSuccess, dialogFooter, formId }: TransactionFormProps) {
   const { categories, addTransaction, updateTransaction, getCategoryById } = useAppContext();
 
   const form = useForm<TransactionFormValues>({
@@ -54,7 +55,7 @@ export function TransactionForm({ transaction, onSubmitSuccess, dialogFooter }: 
     defaultValues: transaction
       ? {
           type: transaction.type,
-          amount: formatCurrency(transaction.amount, false),
+          amount: formatCurrency(transaction.amount), // Keep existing format for display
           categoryId: transaction.categoryId,
           date: parseISO(transaction.date),
           notes: transaction.notes || "",
@@ -112,7 +113,7 @@ export function TransactionForm({ transaction, onSubmitSuccess, dialogFooter }: 
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form id={formId} onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <FormField
           control={form.control}
           name="type"
@@ -121,7 +122,10 @@ export function TransactionForm({ transaction, onSubmitSuccess, dialogFooter }: 
               <FormLabel>Type</FormLabel>
               <FormControl>
                 <RadioGroup
-                  onValueChange={field.onChange}
+                  onValueChange={(value) => {
+                    field.onChange(value);
+                    form.setValue("categoryId", ""); // Reset category when type changes
+                  }}
                   defaultValue={field.value}
                   className="flex space-x-4"
                 >
@@ -174,13 +178,20 @@ export function TransactionForm({ transaction, onSubmitSuccess, dialogFooter }: 
           render={({ field }) => (
             <FormItem>
               <FormLabel>Category</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <Select 
+                onValueChange={field.onChange} 
+                value={field.value} // Ensure value is controlled
+                key={transactionType} // Re-render select when type changes to clear value if needed
+              >
                 <FormControl>
                   <SelectTrigger>
                     <SelectValue placeholder="Select a category" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
+                  {availableCategories.length === 0 && (
+                    <p className="p-2 text-sm text-muted-foreground">No categories for this type.</p>
+                  )}
                   {availableCategories.map((category: Category) => (
                     <SelectItem key={category.id} value={category.id} className="flex items-center">
                       <IconComponent iconName={category.icon} />

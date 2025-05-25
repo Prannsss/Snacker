@@ -25,6 +25,7 @@ interface AddTransactionDialogProps {
 
 export default function AddTransactionDialog({ trigger, transactionToEdit, onSuccess }: AddTransactionDialogProps) {
   const [open, setOpen] = useState(false);
+  const formId = "transaction-form-in-dialog"; // Define a consistent form ID
 
   const handleSubmitSuccess = () => {
     setOpen(false);
@@ -54,6 +55,7 @@ export default function AddTransactionDialog({ trigger, transactionToEdit, onSuc
           </DialogDescription>
         </DialogHeader>
         <TransactionForm 
+          formId={formId} // Pass the formId to TransactionForm
           transaction={transactionToEdit}
           onSubmitSuccess={handleSubmitSuccess}
           dialogFooter={
@@ -61,21 +63,12 @@ export default function AddTransactionDialog({ trigger, transactionToEdit, onSuc
               <DialogClose asChild>
                 <Button type="button" variant="outline">Cancel</Button>
               </DialogClose>
-              <Button type="submit" form="transaction-form-in-dialog"> {/* Connects to form inside TransactionForm */}
+              <Button type="submit" form={formId}> {/* Use the formId here */}
                 {transactionToEdit ? "Save Changes" : "Add Transaction"}
               </Button>
             </DialogFooter>
           }
         />
-         {/* This makes the TransactionForm's internal submit button work with the dialog footer */}
-         <script dangerouslySetInnerHTML={{ __html: `
-            setTimeout(() => {
-              const form = document.querySelector('.sm\\:max-w-\\[425px\\].max-h-\\[90vh\\].overflow-y-auto form');
-              if (form) {
-                form.id = 'transaction-form-in-dialog';
-              }
-            }, 0);
-          `}} />
       </DialogContent>
     </Dialog>
   );
