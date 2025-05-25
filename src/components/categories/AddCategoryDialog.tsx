@@ -25,6 +25,7 @@ interface AddCategoryDialogProps {
 
 export default function AddCategoryDialog({ categoryToEdit, trigger, onSuccess }: AddCategoryDialogProps) {
   const [open, setOpen] = useState(false);
+  const formId = "category-form-in-dialog"; // Define a consistent form ID
 
   const handleSubmitSuccess = () => {
     setOpen(false);
@@ -56,26 +57,18 @@ export default function AddCategoryDialog({ categoryToEdit, trigger, onSuccess }
         <CategoryForm
           category={categoryToEdit}
           onSubmitSuccess={handleSubmitSuccess}
+          formId={formId} // Pass the formId to CategoryForm
           dialogFooter={
             <DialogFooter>
                <DialogClose asChild>
                 <Button type="button" variant="outline">Cancel</Button>
               </DialogClose>
-              <Button type="submit" form="category-form-in-dialog">
+              <Button type="submit" form={formId}> {/* Use the formId here */}
                 {categoryToEdit ? "Save Changes" : "Add Category"}
               </Button>
             </DialogFooter>
           }
         />
-        {/* This makes the CategoryForm's internal submit button work with the dialog footer */}
-        <script dangerouslySetInnerHTML={{ __html: `
-            setTimeout(() => {
-              const form = document.querySelector('.sm\\:max-w-\\[425px\\] form');
-              if (form) {
-                form.id = 'category-form-in-dialog';
-              }
-            }, 0);
-          `}} />
       </DialogContent>
     </Dialog>
   );

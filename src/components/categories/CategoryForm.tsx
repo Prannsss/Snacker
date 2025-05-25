@@ -1,3 +1,4 @@
+
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -35,9 +36,10 @@ interface CategoryFormProps {
   category?: Category;
   onSubmitSuccess?: () => void;
   dialogFooter?: ReactNode;
+  formId?: string; // Added formId prop
 }
 
-export function CategoryForm({ category, onSubmitSuccess, dialogFooter }: CategoryFormProps) {
+export function CategoryForm({ category, onSubmitSuccess, dialogFooter, formId }: CategoryFormProps) {
   const { addCategory, updateCategory } = useAppContext();
 
   const form = useForm<CategoryFormValues>({
@@ -69,7 +71,7 @@ export function CategoryForm({ category, onSubmitSuccess, dialogFooter }: Catego
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6" id={formId}>
         <FormField
           control={form.control}
           name="name"
