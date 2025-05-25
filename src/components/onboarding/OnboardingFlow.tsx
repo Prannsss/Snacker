@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from 'react';
@@ -6,7 +7,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Wallet, Landmark, PiggyBank, CheckCircle2 } from 'lucide-react';
-import Image from 'next/image';
+// Image import removed as it's no longer used
 import { useAppContext } from '@/contexts/AppContext';
 import { ALL_DEFAULT_CATEGORIES } from '@/lib/constants';
 import { PageWrapper } from '../shared/PageWrapper';
@@ -19,20 +20,17 @@ const steps = [
   {
     title: "Welcome to Snacker!",
     description: "Your personal expense tracker to help you manage your finances with ease.",
-    image: "https://placehold.co/600x400.png?a=1",
-    dataAiHint: "welcome finance",
+    // image and dataAiHint removed
   },
   {
     title: "Track Income & Expenses",
     description: "Easily log your earnings and spendings. Categorize them for better insights.",
-    image: "https://placehold.co/600x400.png?a=2",
-    dataAiHint: "tracking money",
+    // image and dataAiHint removed
   },
   {
     title: "Visualize Your Habits",
     description: "See where your money goes with simple charts and summaries.",
-    image: "https://placehold.co/600x400.png?a=3",
-    dataAiHint: "financial charts",
+    // image and dataAiHint removed
   },
   {
     title: "Ready to Start?",
@@ -43,14 +41,12 @@ const steps = [
 
 export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
   const [currentStep, setCurrentStep] = useState(0);
-  const { addCategory } = useAppContext(); // Assuming categories are not pre-loaded if onboarding
+  const { addCategory } = useAppContext(); 
 
   const handleNext = () => {
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
     } else {
-      // Final step, set up initial data if needed (e.g. default categories)
-      // This is now handled in AppContext initialization
       onComplete();
     }
   };
@@ -61,8 +57,8 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
     <PageWrapper className="flex items-center justify-center min-h-screen bg-gradient-to-br from-primary/10 via-background to-background">
       <Card className="w-full max-w-md shadow-2xl">
         <CardHeader className="text-center">
-          {step.icon ? <step.icon className="w-16 h-16 mx-auto mb-4 text-primary" /> : 
-            step.image && <Image src={step.image} alt={step.title} width={200} height={150} data-ai-hint={step.dataAiHint} className="mx-auto mb-4 rounded-lg" />}
+          {/* Conditional rendering updated to only show icon if present */}
+          {step.icon && <step.icon className="w-16 h-16 mx-auto mb-4 text-primary" />}
           <CardTitle className="text-3xl font-bold text-primary">{step.title}</CardTitle>
           <CardDescription className="text-md text-muted-foreground">{step.description}</CardDescription>
         </CardHeader>
