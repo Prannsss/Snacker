@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState, useMemo, useCallback, Suspense, lazy, useEffect } from 'react';
+import React, { useState, useMemo, useCallback, Suspense, lazy, useEffect, useRef } from 'react';
 import { PageWrapper } from '@/components/shared/PageWrapper';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -17,7 +17,7 @@ import { Download, Edit3, Save } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner';
 import { LOCAL_STORAGE_KEY } from '@/lib/constants';
-import Image from 'next/image';
+import Image from 'next/image'; // Keep for NextImage if used elsewhere, not for AvatarImage src
 
 const LazyOnboardingFlow = lazy(() => import('@/components/onboarding/OnboardingFlow'));
 const LazyUsernamePrompt = lazy(() => import('@/components/onboarding/UsernamePrompt'));
@@ -31,12 +31,15 @@ export default function ProfilePage() {
     markOnboardingComplete, 
     isLoadingData,
     username, 
-    setUsername 
+    setUsername,
+    profilePictureDataUri,
+    setProfilePicture
   } = useAppContext();
   
   const [profileName, setProfileName] = useState(username || ""); 
   const [isEditingName, setIsEditingName] = useState(false);
   const { toast } = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   useEffect(() => {
     if (username && !isEditingName) {
@@ -57,7 +60,7 @@ export default function ProfilePage() {
   const handleUsernameSet = (name: string) => {
     setUsername(name);
     setProfileName(name); 
-    setIsEditingName(false); // Exit edit mode after initial username set
+    setIsEditingName(false); 
   };
 
   const handleSaveName = () => {
@@ -79,7 +82,54 @@ export default function ProfilePage() {
 
   const handleCancelEditName = () => {
     setIsEditingName(false);
-    setProfileName(username || ""); // Reset to context username
+    setProfileName(username || ""); 
+  };
+
+  const handleImageUploadClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      if (!file.type.startsWith('image/')) {
+        toast({
+          title: "Upload Error",
+          description: "Please select an image file.",
+          variant: "destructive",
+        });
+        return;
+      }
+      // Basic size check (e.g., 2MB)
+      if (file.size > 2 * 1024 * 1024) {
+        toast({
+          title: "Upload Error",
+          description: "Image size should not exceed 2MB.",
+          variant: "destructive",
+        });
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setProfilePicture(reader.result as string);
+        toast({
+          title: "Profile Picture Updated",
+          description: "Your new profile picture has been saved.",
+        });
+      };
+      reader.onerror = () => {
+        toast({
+          title: "Upload Error",
+          description: "Could not read the selected file.",
+          variant: "destructive",
+        });
+      };
+      reader.readAsDataURL(file);
+    }
+    // Reset file input value to allow re-uploading the same file
+    if (event.target) {
+      event.target.value = "";
+    }
   };
 
   const filteredExpenses = useMemo(() => {
@@ -152,7 +202,7 @@ export default function ProfilePage() {
   }, [filteredExpenses, getCategoryById, toast]);
   
   const handleManageData = () => {
-    if (window.confirm("Are you sure you want to clear all your app data (transactions, categories, username, and onboarding status)? This action cannot be undone.")) {
+    if (window.confirm("Are you sure you want to clear all your app data (transactions, categories, username, profile picture, and onboarding status)? This action cannot be undone.")) {
       localStorage.removeItem(LOCAL_STORAGE_KEY);
       toast({
         title: "Data Cleared",
@@ -220,13 +270,20 @@ export default function ProfilePage() {
           <div className="flex flex-col items-center gap-4">
             <div className="relative group">
               <Avatar className="h-24 w-24">
-                <AvatarImage src="https://placehold.co/96x96.png" alt={profileName || 'User'} data-ai-hint="profile avatar" />
+                <AvatarImage src={profilePictureDataUri || "https://placehold.co/100x100.png"} alt={profileName || 'User'} data-ai-hint="profile avatar" />
                 <AvatarFallback>{profileName?.substring(0, 2).toUpperCase() || 'SN'}</AvatarFallback>
               </Avatar>
-              <Button variant="outline" size="icon" className="absolute bottom-0 right-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => toast({ title: "Feature Coming Soon", description: "Profile picture uploads will be available in a future update."})}>
+              <Button variant="outline" size="icon" className="absolute bottom-0 right-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity" onClick={handleImageUploadClick}>
                 <Edit3 className="h-4 w-4" />
                 <span className="sr-only">Upload Picture</span>
               </Button>
+              <input 
+                type="file" 
+                ref={fileInputRef} 
+                onChange={handleFileChange} 
+                accept="image/*" 
+                className="hidden" 
+              />
             </div>
 
             <div className="w-full max-w-xs text-center">
@@ -295,7 +352,7 @@ export default function ProfilePage() {
         <CardContent>
            <Button variant="destructive" onClick={handleManageData}>Clear All App Data</Button>
            <p className="text-sm text-muted-foreground mt-2">
-             Warning: This will remove all your transactions, categories, username, and onboarding status permanently.
+             Warning: This will remove all your transactions, categories, username, profile picture, and onboarding status permanently.
            </p>
         </CardContent>
       </Card>

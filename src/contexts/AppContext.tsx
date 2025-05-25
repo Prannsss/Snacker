@@ -13,7 +13,8 @@ interface AppContextType {
   categories: Category[];
   isLoadingData: boolean;
   userHasOnboarded: boolean;
-  username?: string; // Added username
+  username?: string;
+  profilePictureDataUri?: string; // Added
   addTransaction: (transaction: Omit<Transaction, 'id'>) => void;
   updateTransaction: (transaction: Transaction) => void;
   deleteTransaction: (id: string) => void;
@@ -27,7 +28,8 @@ interface AppContextType {
   getTransactionsForMonth: (date: Date) => Transaction[];
   getUniqueMonthsWithTransactions: () => Date[];
   markOnboardingComplete: () => void;
-  setUsername: (name: string) => void; // Added setUsername
+  setUsername: (name: string) => void;
+  setProfilePicture: (dataUri: string) => void; // Added
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -36,7 +38,8 @@ const initialStoredData: StoredData = {
   transactions: [],
   categories: ALL_DEFAULT_CATEGORIES,
   userHasOnboarded: false,
-  username: undefined, // Initialize username
+  username: undefined,
+  profilePictureDataUri: undefined, // Initialize
 };
 
 export function AppProvider({ children }: { children: ReactNode }) {
@@ -61,7 +64,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
           categoriesUpdated = true;
         }
         
-        // Ensure all default categories have an icon
         currentCategories = currentCategories.map(cat => {
           const defaultCat = ALL_DEFAULT_CATEGORIES.find(dc => dc.id === cat.id);
           if (defaultCat && !cat.icon) {
@@ -84,7 +86,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const transactions = storedData.transactions;
   const categories = storedData.categories;
   const userHasOnboarded = storedData.userHasOnboarded || false;
-  const username = storedData.username; // Get username
+  const username = storedData.username;
+  const profilePictureDataUri = storedData.profilePictureDataUri; // Get profile picture
 
   const isLoadingData = isLoadingInitialData || !isInitialized;
 
@@ -94,6 +97,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const setUsername = useCallback((name: string) => {
     setStoredData(prev => ({ ...prev, username: name }));
+  }, [setStoredData]);
+
+  const setProfilePicture = useCallback((dataUri: string) => {
+    setStoredData(prev => ({ ...prev, profilePictureDataUri: dataUri }));
   }, [setStoredData]);
 
   const addTransaction = useCallback((transaction: Omit<Transaction, 'id'>) => {
@@ -214,7 +221,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       categories, 
       isLoadingData,
       userHasOnboarded,
-      username, // Provide username
+      username,
+      profilePictureDataUri, // Provide profile picture
       addTransaction, 
       updateTransaction, 
       deleteTransaction, 
@@ -228,7 +236,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       getTransactionsForMonth,
       getUniqueMonthsWithTransactions,
       markOnboardingComplete,
-      setUsername // Provide setUsername
+      setUsername,
+      setProfilePicture // Provide setProfilePicture
     }}>
       {children}
     </AppContext.Provider>

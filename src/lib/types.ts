@@ -21,4 +21,5 @@ export interface StoredData {
   categories: Category[];
   userHasOnboarded?: boolean;
   username?: string; // Added username
+  profilePictureDataUri?: string; // Added for profile picture
 }
