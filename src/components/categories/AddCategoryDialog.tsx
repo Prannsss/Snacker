@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -22,7 +23,7 @@ interface AddCategoryDialogProps {
   onSuccess?: () => void;
 }
 
-export function AddCategoryDialog({ categoryToEdit, trigger, onSuccess }: AddCategoryDialogProps) {
+export default function AddCategoryDialog({ categoryToEdit, trigger, onSuccess }: AddCategoryDialogProps) {
   const [open, setOpen] = useState(false);
 
   const handleSubmitSuccess = () => {

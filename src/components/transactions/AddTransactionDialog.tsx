@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -22,7 +23,7 @@ interface AddTransactionDialogProps {
   onSuccess?: () => void;
 }
 
-export function AddTransactionDialog({ trigger, transactionToEdit, onSuccess }: AddTransactionDialogProps) {
+export default function AddTransactionDialog({ trigger, transactionToEdit, onSuccess }: AddTransactionDialogProps) {
   const [open, setOpen] = useState(false);
 
   const handleSubmitSuccess = () => {
