@@ -57,7 +57,7 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
   const step = steps[currentStep];
 
   return (
-    <PageWrapper className="flex items-center justify-center min-h-screen bg-gradient-to-br from-primary/10 via-background to-background">
+    <PageWrapper className="flex items-center justify-center min-h-screen bg-gradient-to-br from-primary/10 via-background to-background relative">
       <Card className="w-full max-w-md shadow-2xl bg-card/[.40] backdrop-blur-xl">
         <CardHeader 
           className={cn(
@@ -80,13 +80,14 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
           </div>
           <Button 
             onClick={handleNext} 
-            className="w-full text-lg py-6 mt-4"
+            className="w-full text-lg py-6 mt-4 hover:bg-accent hover:text-accent-foreground"
             disabled={isTransitioning}
           >
             {currentStep < steps.length - 1 ? "Next" : "Get Started"}
           </Button>
         </CardFooter>
       </Card>
+      <p className="absolute bottom-4 w-full text-center text-xs text-muted-foreground">Developed by France Laurence Velarde</p>
     </PageWrapper>
   );
 }
