@@ -1,15 +1,17 @@
+
 "use client";
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, ListChecks, Settings, Wallet } from 'lucide-react';
+import { Home, ListChecks, Settings, Wallet, User } from 'lucide-react'; // Added User
 import { cn } from '@/lib/utils';
 import { LogoIcon } from '@/components/icons/LogoIcon';
 
 const navItems = [
   { href: '/', label: 'Dashboard', icon: Home },
   { href: '/transactions', label: 'Transactions', icon: ListChecks },
-  { href: '/categories', label: 'Categories', icon: Settings }, // Changed from /settings to /categories
+  { href: '/categories', label: 'Categories', icon: Settings },
+  { href: '/profile', label: 'Profile', icon: User }, // Added Profile item
 ];
 
 export function BottomNavigation() {
