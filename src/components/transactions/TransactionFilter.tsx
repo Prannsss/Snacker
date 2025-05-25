@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -27,6 +28,8 @@ interface TransactionFilterProps {
   onFilterChange: (filters: TransactionFilters) => void;
   initialFilters?: TransactionFilters;
 }
+
+const ALL_CATEGORIES_VALUE = "__ALL_CATEGORIES__"; // Unique value for "All Categories"
 
 export function TransactionFilterBar({ onFilterChange, initialFilters }: TransactionFilterProps) {
   const { categories } = useAppContext();
@@ -117,14 +120,14 @@ export function TransactionFilterBar({ onFilterChange, initialFilters }: Transac
              <div className="space-y-1">
               <Label htmlFor="categoryId">Category</Label>
               <Select
-                value={filters.categoryId || ""}
-                onValueChange={(value) => handleInputChange('categoryId', value || undefined)}
+                value={filters.categoryId || ALL_CATEGORIES_VALUE}
+                onValueChange={(value) => handleInputChange('categoryId', value === ALL_CATEGORIES_VALUE ? undefined : value)}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="All Categories" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Categories</SelectItem>
+                  <SelectItem value={ALL_CATEGORIES_VALUE}>All Categories</SelectItem>
                   {incomeCategories.length > 0 && (
                     <SelectGroup>
                       <SelectLabel>Income</SelectLabel>
