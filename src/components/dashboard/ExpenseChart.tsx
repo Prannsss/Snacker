@@ -69,6 +69,7 @@ export const ExpenseChart = React.memo(function ExpenseChart({ currentMonth }: E
               formatter={(value: number) => [`${value.toFixed(2)}`, 'Amount']}
               contentStyle={{
                 backgroundColor: "hsl(var(--background))",
+                color: "hsl(var(--foreground))", // Added this line
                 borderColor: "hsl(var(--border))",
                 borderRadius: "var(--radius)",
               }}
