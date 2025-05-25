@@ -69,9 +69,15 @@ export const ExpenseChart = React.memo(function ExpenseChart({ currentMonth }: E
               formatter={(value: number) => [`${value.toFixed(2)}`, 'Amount']}
               contentStyle={{
                 backgroundColor: "hsl(var(--background))",
-                color: "hsl(var(--foreground))", // Added this line
                 borderColor: "hsl(var(--border))",
                 borderRadius: "var(--radius)",
+                color: "hsl(var(--foreground))", // Keep for wrapper, just in case
+              }}
+              itemStyle={{ // Styles each "name: value" item in the tooltip
+                color: "hsl(var(--foreground))",
+              }}
+              labelStyle={{ // Styles the main label/title of the tooltip
+                color: "hsl(var(--foreground))",
               }}
             />
             <Legend layout={isMobile ? "horizontal" : "vertical"} verticalAlign={isMobile ? "bottom" : "middle"} align={isMobile ? "center" : "right"} wrapperStyle={isMobile ? {paddingTop: '10px'} : {}}/>
@@ -81,4 +87,3 @@ export const ExpenseChart = React.memo(function ExpenseChart({ currentMonth }: E
     </Card>
   );
 });
-
