@@ -32,7 +32,7 @@ export default function UsernamePrompt({ onUsernameSet }: UsernamePromptProps) {
 
   return (
     <PageWrapper className="flex items-center justify-center min-h-screen bg-gradient-to-br from-primary/10 via-background to-background">
-      <Card className="w-full max-w-md shadow-2xl">
+      <Card className="w-full max-w-md shadow-2xl bg-card/[.40] backdrop-blur-xl">
         <CardHeader className="text-center">
           <SmilePlus className="w-16 h-16 mx-auto mb-4 text-primary" />
           <CardTitle className="text-3xl font-bold text-primary">Welcome to Snacker!</CardTitle>
