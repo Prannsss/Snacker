@@ -25,10 +25,14 @@ export function CategoryList() {
   };
   
   const IconComponent = ({ iconName }: {iconName: string}) => {
-    if (!(iconName in LucideIcons)) return <LucideIcons.Tag className="mr-2 h-4 w-4 text-muted-foreground" />; // Fallback
-    // @ts-ignore next-line
-    const Icon = LucideIcons[iconName as keyof typeof LucideIcons] as LucideIcons.LucideIcon;
-    return <Icon className="mr-2 h-4 w-4 text-muted-foreground" />;
+    const IconCandidate = LucideIcons[iconName as keyof typeof LucideIcons];
+
+    if (typeof IconCandidate === 'function') {
+      const Icon = IconCandidate as LucideIcons.LucideIcon;
+      return <Icon className="mr-2 h-4 w-4 text-muted-foreground" />;
+    }
+    // Fallback if not a function or not found
+    return <LucideIcons.Tag className="mr-2 h-4 w-4 text-muted-foreground" />;
   };
 
 

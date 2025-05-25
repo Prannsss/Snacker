@@ -21,7 +21,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import * as LucideIcons from "lucide-react"; // Import all icons
 import type { ReactNode } from "react";
 
-const iconNames = Object.keys(LucideIcons).filter(key => key !== 'createLucideIcon' && key !== 'icons' && typeof LucideIcons[key as keyof typeof LucideIcons] === 'object');
+// Filter for actual icon components (functions starting with an uppercase letter)
+const iconNames = Object.keys(LucideIcons)
+  .filter(key => {
+    const member = LucideIcons[key as keyof typeof LucideIcons];
+    return typeof member === 'function' && /^[A-Z]/.test(key) && key !== 'createLucideIcon';
+  })
+  .sort();
 
 
 const formSchema = z.object({
@@ -62,10 +68,14 @@ export function CategoryForm({ category, onSubmitSuccess, dialogFooter, formId }
   }
   
   const IconComponent = ({ iconName }: {iconName: string}) => {
-    if (!(iconName in LucideIcons)) return <LucideIcons.Tag className="mr-2 h-4 w-4" />; // Fallback
-    // @ts-ignore next-line
-    const Icon = LucideIcons[iconName as keyof typeof LucideIcons] as LucideIcons.LucideIcon;
-    return <Icon className="mr-2 h-4 w-4" />;
+    const IconCandidate = LucideIcons[iconName as keyof typeof LucideIcons];
+
+    if (typeof IconCandidate === 'function') {
+      const Icon = IconCandidate as LucideIcons.LucideIcon;
+      return <Icon className="mr-2 h-4 w-4" />;
+    }
+    // Fallback if not a function or not found
+    return <LucideIcons.Tag className="mr-2 h-4 w-4 text-muted-foreground" />;
   };
 
 

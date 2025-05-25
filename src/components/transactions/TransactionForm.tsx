@@ -1,3 +1,4 @@
+
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -18,7 +19,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { CalendarIcon, Tag } from "lucide-react";
+import { CalendarIcon } from "lucide-react"; // Keep specific import if only one is needed
 import { cn, formatCurrency, parseCurrency } from "@/lib/utils";
 import { format, parseISO } from 'date-fns';
 import { useAppContext } from "@/contexts/AppContext";
@@ -96,12 +97,17 @@ export function TransactionForm({ transaction, onSubmitSuccess, dialogFooter }: 
   }
 
   const IconComponent = ({ iconName }: {iconName?: string}) => {
-    if (!iconName || !(iconName in LucideIcons)) {
-      return <Tag className="mr-2 h-4 w-4" />;
+    if (!iconName) {
+      return <LucideIcons.Tag className="mr-2 h-4 w-4 text-muted-foreground" />;
     }
-    // @ts-ignore next-line
-    const Icon = LucideIcons[iconName] as LucideIcons.LucideIcon;
-    return <Icon className="mr-2 h-4 w-4" />;
+    const IconCandidate = LucideIcons[iconName as keyof typeof LucideIcons];
+
+    if (typeof IconCandidate === 'function') {
+      const Icon = IconCandidate as LucideIcons.LucideIcon;
+      return <Icon className="mr-2 h-4 w-4" />;
+    }
+    // Fallback if not a function or not found
+    return <LucideIcons.Tag className="mr-2 h-4 w-4 text-muted-foreground" />;
   };
 
   return (
