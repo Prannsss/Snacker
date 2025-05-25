@@ -169,7 +169,9 @@ export default function ProfilePage() {
 
   return (
     <PageWrapper>
-      <PageHeader title="Profile & Settings" />
+      <div className="sticky top-0 z-30 bg-background/80 backdrop-blur-md shadow-sm -mx-4 md:-mx-6 pl-6 pr-4 md:pl-8 md:pr-6 py-3 mb-4">
+        <PageHeader title="Profile & Settings" />
+      </div>
       
       <Card className="shadow-sm">
         <CardHeader>
