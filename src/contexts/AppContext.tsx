@@ -4,9 +4,18 @@
 import type { ReactNode } from 'react';
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useLocalStorage } from '@/hooks/use-local-storage';
-import type { Transaction, Category, StoredData } from '@/lib/types';
+import type { Transaction, Category, StoredData, TransactionFilters } from '@/lib/types'; // Added TransactionFilters
 import { LOCAL_STORAGE_KEY, ALL_DEFAULT_CATEGORIES } from '@/lib/constants';
 import { format, parseISO, startOfMonth, endOfMonth, isWithinInterval, getMonth, getYear } from 'date-fns';
+
+// Define a type for filters where dates are strings (for local storage)
+interface StoredTransactionFilters {
+  dateFrom?: string;
+  dateTo?: string;
+  type?: 'income' | 'expense' | 'all';
+  categoryId?: string;
+  searchTerm?: string;
+}
 
 interface AppContextType {
   transactions: Transaction[];
@@ -14,7 +23,8 @@ interface AppContextType {
   isLoadingData: boolean;
   userHasOnboarded: boolean;
   username?: string;
-  profilePictureDataUri?: string; // Added
+  profilePictureDataUri?: string;
+  transactionPageFilters?: StoredTransactionFilters; // Filters with string dates
   addTransaction: (transaction: Omit<Transaction, 'id'>) => void;
   updateTransaction: (transaction: Transaction) => void;
   deleteTransaction: (id: string) => void;
@@ -29,7 +39,8 @@ interface AppContextType {
   getUniqueMonthsWithTransactions: () => Date[];
   markOnboardingComplete: () => void;
   setUsername: (name: string) => void;
-  setProfilePicture: (dataUri: string) => void; // Added
+  setProfilePicture: (dataUri: string) => void;
+  saveTransactionPageFilters: (filters: TransactionFilters) => void; // Function to save filters
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -39,7 +50,8 @@ const initialStoredData: StoredData = {
   categories: ALL_DEFAULT_CATEGORIES,
   userHasOnboarded: false,
   username: undefined,
-  profilePictureDataUri: undefined, // Initialize
+  profilePictureDataUri: undefined,
+  transactionPageFilters: undefined, // Initialize
 };
 
 export function AppProvider({ children }: { children: ReactNode }) {
@@ -49,7 +61,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
   );
   const [isInitialized, setIsInitialized] = useState(false);
 
-  // Ensure default categories are set if not present
   useEffect(() => {
     if (!isLoadingInitialData && !isInitialized) {
       setStoredData(prevData => {
@@ -87,7 +98,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const categories = storedData.categories;
   const userHasOnboarded = storedData.userHasOnboarded || false;
   const username = storedData.username;
-  const profilePictureDataUri = storedData.profilePictureDataUri; // Get profile picture
+  const profilePictureDataUri = storedData.profilePictureDataUri;
+  const transactionPageFilters = storedData.transactionPageFilters; // Get stored filters
 
   const isLoadingData = isLoadingInitialData || !isInitialized;
 
@@ -214,6 +226,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
       .sort((a, b) => b.getTime() - a.getTime());
   }, [transactions]);
 
+  const saveTransactionPageFilters = useCallback((filters: TransactionFilters) => {
+    const filtersToStore: StoredTransactionFilters = {
+      ...filters,
+      dateFrom: filters.dateFrom ? filters.dateFrom.toISOString() : undefined,
+      dateTo: filters.dateTo ? filters.dateTo.toISOString() : undefined,
+    };
+    setStoredData(prev => ({ ...prev, transactionPageFilters: filtersToStore }));
+  }, [setStoredData]);
+
 
   return (
     <AppContext.Provider value={{ 
@@ -222,7 +243,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       isLoadingData,
       userHasOnboarded,
       username,
-      profilePictureDataUri, // Provide profile picture
+      profilePictureDataUri,
+      transactionPageFilters, // Provide stored filters
       addTransaction, 
       updateTransaction, 
       deleteTransaction, 
@@ -237,7 +259,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       getUniqueMonthsWithTransactions,
       markOnboardingComplete,
       setUsername,
-      setProfilePicture // Provide setProfilePicture
+      setProfilePicture,
+      saveTransactionPageFilters // Provide save function
     }}>
       {children}
     </AppContext.Provider>
@@ -251,3 +274,5 @@ export function useAppContext() {
   }
   return context;
 }
+
+    
