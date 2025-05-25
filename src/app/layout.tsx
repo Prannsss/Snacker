@@ -21,7 +21,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: 'Snacker - Expense Tracker',
   description: 'Track your income and expenses with Snacker.',
-  manifest: '/manifest.webmanifest', // Link to your Web App Manifest
+  manifest: '/manifest.json', // Link to your Web App Manifest
   icons: {
     icon: '/icons/icon-32x32.png', // General purpose favicon
     apple: '/icons/apple-touch-icon.png', // For Apple devices
