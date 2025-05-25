@@ -4,7 +4,8 @@ import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import { AppProviders } from '@/components/shared/AppProviders';
 import { Toaster } from '@/components/ui/toaster';
-import { MainAppShell } from '@/components/shared/MainAppShell'; // Changed import
+import { MainAppShell } from '@/components/shared/MainAppShell';
+import { AppInitializer } from '@/components/shared/AppInitializer'; // Import the new component
 import { cn } from '@/lib/utils';
 
 const geistSans = Geist({
@@ -36,7 +37,9 @@ export default function RootLayout({
         )}
       >
         <AppProviders>
-          <MainAppShell>{children}</MainAppShell> {/* Use MainAppShell */}
+          <AppInitializer> {/* Wrap MainAppShell and children */}
+            <MainAppShell>{children}</MainAppShell>
+          </AppInitializer>
           <Toaster />
         </AppProviders>
       </body>
