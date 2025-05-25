@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState, useMemo, useCallback, Suspense, lazy } from 'react';
+import React, { useState, useMemo, useCallback, Suspense, lazy, useEffect } from 'react';
 import { PageWrapper } from '@/components/shared/PageWrapper';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -18,6 +18,8 @@ import { LoadingSpinner } from '@/components/shared/LoadingSpinner';
 import { LOCAL_STORAGE_KEY } from '@/lib/constants';
 
 const LazyOnboardingFlow = lazy(() => import('@/components/onboarding/OnboardingFlow'));
+const LazyUsernamePrompt = lazy(() => import('@/components/onboarding/UsernamePrompt'));
+
 
 export default function ProfilePage() {
   const { 
@@ -25,23 +27,35 @@ export default function ProfilePage() {
     getCategoryById, 
     userHasOnboarded, 
     markOnboardingComplete, 
-    isLoadingData 
+    isLoadingData,
+    username, // Get username
+    setUsername // Get setUsername
   } = useAppContext();
-  const [profileName, setProfileName] = useState("Guest User"); 
+  
+  // Initialize profileName with username from context or "Guest User"
+  const [profileName, setProfileName] = useState(username || "Guest User"); 
+  
+  useEffect(() => {
+    setProfileName(username || "Guest User");
+  }, [username]);
+
   const [reportFilters, setReportFilters] = useState<TransactionFilters>({ 
-    type: 'expense', // Default to expense
-    dateFrom: startOfMonth(new Date()), // Default date range
+    type: 'expense', 
+    dateFrom: startOfMonth(new Date()), 
     dateTo: endOfMonth(new Date()),
   });
   const { toast } = useToast();
+
+  const handleUsernameSet = (name: string) => {
+    setUsername(name);
+    setProfileName(name); // Also update local state if needed, though context should drive it
+  };
 
   const filteredExpenses = useMemo(() => {
     return transactions.filter(transaction => {
       if (transaction.type !== 'expense') return false; 
 
       if (reportFilters.type && reportFilters.type !== 'all' && transaction.type !== reportFilters.type) {
-        // Even if filter allows 'all' or 'income', we only want expenses for this report.
-        // This ensures if user changes filter type, report remains expenses.
         if (reportFilters.type !== 'expense') return false;
       }
       
@@ -60,7 +74,7 @@ export default function ProfilePage() {
         if (!notesMatch && !amountMatch && !categoryNameMatch) return false;
       }
       return true;
-    }).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()); // Sort by date ascending for report
+    }).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
   }, [transactions, reportFilters, getCategoryById]);
 
   const handleDownloadReport = useCallback(() => {
@@ -78,7 +92,7 @@ export default function ProfilePage() {
       headers.join(','),
       ...filteredExpenses.map(tx => {
         const categoryName = getCategoryById(tx.categoryId)?.name || "N/A";
-        const notes = tx.notes ? `"${tx.notes.replace(/"/g, '""')}"` : ""; // Escape quotes and wrap in quotes
+        const notes = tx.notes ? `"${tx.notes.replace(/"/g, '""')}"` : "";
         return [
           format(parseISO(tx.date), "yyyy-MM-dd"),
           categoryName,
@@ -107,13 +121,12 @@ export default function ProfilePage() {
   }, [filteredExpenses, getCategoryById, toast]);
   
   const handleManageData = () => {
-    if (window.confirm("Are you sure you want to clear all your app data (transactions and categories)? This action cannot be undone.")) {
+    if (window.confirm("Are you sure you want to clear all your app data (transactions, categories, username, and onboarding status)? This action cannot be undone.")) {
       localStorage.removeItem(LOCAL_STORAGE_KEY);
       toast({
         title: "Data Cleared",
         description: "All application data has been removed. The app will now reload.",
       });
-      // Wait for toast to be visible before reloading
       setTimeout(() => {
         window.location.reload();
       }, 1500);
@@ -122,7 +135,7 @@ export default function ProfilePage() {
 
   if (isLoadingData) {
     return (
-      <div className="flex flex-col items-center justify-center flex-grow">
+      <div className="flex flex-col items-center justify-center flex-grow min-h-screen">
         <LoadingSpinner size={48} />
         <p className="mt-4 text-lg text-foreground">Loading profile...</p>
       </div>
@@ -132,7 +145,7 @@ export default function ProfilePage() {
   if (!userHasOnboarded) {
     return (
       <Suspense fallback={
-        <div className="flex flex-col items-center justify-center flex-grow">
+        <div className="flex flex-col items-center justify-center flex-grow min-h-screen">
           <LoadingSpinner size={48} />
         </div>
       }>
@@ -140,6 +153,19 @@ export default function ProfilePage() {
       </Suspense>
     );
   }
+
+  if (userHasOnboarded && !username) {
+     return (
+      <Suspense fallback={
+        <div className="flex flex-col items-center justify-center flex-grow min-h-screen">
+          <LoadingSpinner size={48} />
+        </div>
+      }>
+        <LazyUsernamePrompt onUsernameSet={handleUsernameSet} />
+      </Suspense>
+    );
+  }
+
 
   return (
     <PageWrapper>
@@ -187,7 +213,7 @@ export default function ProfilePage() {
         <CardContent>
            <Button variant="destructive" onClick={handleManageData}>Clear All App Data</Button>
            <p className="text-sm text-muted-foreground mt-2">
-             Warning: This will remove all your transactions, categories, and onboarding status permanently.
+             Warning: This will remove all your transactions, categories, username, and onboarding status permanently.
            </p>
         </CardContent>
       </Card>
@@ -195,7 +221,6 @@ export default function ProfilePage() {
   );
 }
 
-// Helper for date range consistency
 const startOfDay = (date: Date) => {
   const newDate = new Date(date);
   newDate.setHours(0, 0, 0, 0);

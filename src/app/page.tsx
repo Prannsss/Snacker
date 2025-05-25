@@ -7,31 +7,39 @@ import { PageHeader } from '@/components/shared/PageHeader';
 import { SummaryCards } from '@/components/dashboard/SummaryCards';
 import { ExpenseChart } from '@/components/dashboard/ExpenseChart';
 import { MonthSwitcher } from '@/components/dashboard/MonthSwitcher';
-// import { AddTransactionDialog } from '@/components/transactions/AddTransactionDialog'; // Lazy loaded
 import { TransactionList } from '@/components/transactions/TransactionList';
 import { useAppContext } from '@/contexts/AppContext';
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner';
-// import OnboardingFlow from '@/components/onboarding/OnboardingFlow'; // Lazy loaded
 import { Button } from '@/components/ui/button';
 import { PlusCircle } from 'lucide-react';
 
 const LazyAddTransactionDialog = lazy(() => import('@/components/transactions/AddTransactionDialog'));
 const LazyOnboardingFlow = lazy(() => import('@/components/onboarding/OnboardingFlow'));
+const LazyUsernamePrompt = lazy(() => import('@/components/onboarding/UsernamePrompt'));
 
 
 export default function DashboardPage() {
   const [currentMonth, setCurrentMonth] = useState(new Date());
-  const { transactions, getTransactionsForMonth, isLoadingData, userHasOnboarded, markOnboardingComplete } = useAppContext();
+  const { 
+    transactions, 
+    getTransactionsForMonth, 
+    isLoadingData, 
+    userHasOnboarded, 
+    markOnboardingComplete,
+    username, // Get username
+    setUsername  // Get setUsername
+  } = useAppContext();
 
   const monthlyTransactions = getTransactionsForMonth(currentMonth);
-  
-  // Sort transactions by date, most recent first
   const sortedTransactions = [...monthlyTransactions].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
+  const handleUsernameSet = (name: string) => {
+    setUsername(name);
+  };
 
   if (isLoadingData) {
     return (
-      <div className="flex flex-col items-center justify-center flex-grow">
+      <div className="flex flex-col items-center justify-center flex-grow min-h-screen">
         <LoadingSpinner size={48} />
         <p className="mt-4 text-lg text-foreground">Loading dashboard...</p>
       </div>
@@ -41,11 +49,24 @@ export default function DashboardPage() {
   if (!userHasOnboarded) {
     return (
       <Suspense fallback={
-        <div className="flex flex-col items-center justify-center flex-grow">
+        <div className="flex flex-col items-center justify-center flex-grow min-h-screen">
           <LoadingSpinner size={48} />
         </div>
       }>
         <LazyOnboardingFlow onComplete={markOnboardingComplete} />
+      </Suspense>
+    );
+  }
+
+  if (!username) {
+    return (
+      <Suspense fallback={
+        <div className="flex flex-col items-center justify-center flex-grow min-h-screen">
+          <LoadingSpinner size={48} />
+          <p className="mt-4 text-lg text-foreground">Loading setup...</p>
+        </div>
+      }>
+        <LazyUsernamePrompt onUsernameSet={handleUsernameSet} />
       </Suspense>
     );
   }
@@ -65,12 +86,13 @@ export default function DashboardPage() {
           </Suspense>
         } 
       />
+      <h2 className="text-xl md:text-2xl font-semibold text-foreground mb-2">Good Day, {username}!</h2>
       <MonthSwitcher currentMonth={currentMonth} onMonthChange={setCurrentMonth} />
       <SummaryCards currentMonth={currentMonth} />
       <div className="grid md:grid-cols-2 gap-6">
         <ExpenseChart currentMonth={currentMonth} />
         <TransactionList 
-          transactions={sortedTransactions.slice(0, 5)} // Show recent 5 for dashboard
+          transactions={sortedTransactions.slice(0, 5)} 
           title="Recent Transactions"
           description="Latest income and expenses for this month."
           emptyStateMessage="No transactions this month."

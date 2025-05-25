@@ -20,4 +20,5 @@ export interface StoredData {
   transactions: Transaction[];
   categories: Category[];
   userHasOnboarded?: boolean;
+  username?: string; // Added username
 }

@@ -1,3 +1,4 @@
+
 "use client";
 
 import type { ReactNode } from 'react';
@@ -12,6 +13,7 @@ interface AppContextType {
   categories: Category[];
   isLoadingData: boolean;
   userHasOnboarded: boolean;
+  username?: string; // Added username
   addTransaction: (transaction: Omit<Transaction, 'id'>) => void;
   updateTransaction: (transaction: Transaction) => void;
   deleteTransaction: (id: string) => void;
@@ -25,6 +27,7 @@ interface AppContextType {
   getTransactionsForMonth: (date: Date) => Transaction[];
   getUniqueMonthsWithTransactions: () => Date[];
   markOnboardingComplete: () => void;
+  setUsername: (name: string) => void; // Added setUsername
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -33,6 +36,7 @@ const initialStoredData: StoredData = {
   transactions: [],
   categories: ALL_DEFAULT_CATEGORIES,
   userHasOnboarded: false,
+  username: undefined, // Initialize username
 };
 
 export function AppProvider({ children }: { children: ReactNode }) {
@@ -80,11 +84,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const transactions = storedData.transactions;
   const categories = storedData.categories;
   const userHasOnboarded = storedData.userHasOnboarded || false;
+  const username = storedData.username; // Get username
 
   const isLoadingData = isLoadingInitialData || !isInitialized;
 
   const markOnboardingComplete = useCallback(() => {
     setStoredData(prev => ({ ...prev, userHasOnboarded: true }));
+  }, [setStoredData]);
+
+  const setUsername = useCallback((name: string) => {
+    setStoredData(prev => ({ ...prev, username: name }));
   }, [setStoredData]);
 
   const addTransaction = useCallback((transaction: Omit<Transaction, 'id'>) => {
@@ -129,8 +138,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [setStoredData]);
 
   const deleteCategory = useCallback((id: string) => {
-    // TODO: Handle transactions associated with this category (e.g., reassign or delete)
-    // For now, just remove the category
     setStoredData(prev => ({
       ...prev,
       categories: prev.categories.filter(c => c.id !== id),
@@ -169,17 +176,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
       distribution[expense.categoryId] = (distribution[expense.categoryId] || 0) + expense.amount;
     });
     
-    // Base HSL for charts (using primary color from theme)
-    const baseHue = 90; // from --primary: 90 39% 31%;
+    const baseHue = 90; 
     const baseSaturation = 39;
     const baseLightness = 31;
 
     return Object.entries(distribution).map(([categoryId, amount], index) => {
       const category = getCategoryById(categoryId);
-      // Generate slightly different colors for chart segments
-      const fillHue = (baseHue + index * 30) % 360; // Vary hue
-      const fillLightness = baseLightness + (index % 2 === 0 ? 5 : -5); // Vary lightness slightly
-      const fillSaturation = baseSaturation + (index % 3 === 0 ? 5 : -5); // Vary saturation slightly
+      const fillHue = (baseHue + index * 30) % 360; 
+      const fillLightness = baseLightness + (index % 2 === 0 ? 5 : -5); 
+      const fillSaturation = baseSaturation + (index % 3 === 0 ? 5 : -5);
       return {
         name: category?.name || 'Unknown',
         value: amount,
@@ -199,7 +204,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         const [year, month] = myStr.split('-').map(Number);
         return new Date(year, month, 1);
       })
-      .sort((a, b) => b.getTime() - a.getTime()); // Sort descending
+      .sort((a, b) => b.getTime() - a.getTime());
   }, [transactions]);
 
 
@@ -209,6 +214,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       categories, 
       isLoadingData,
       userHasOnboarded,
+      username, // Provide username
       addTransaction, 
       updateTransaction, 
       deleteTransaction, 
@@ -221,7 +227,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       getMonthlyExpenseDistribution,
       getTransactionsForMonth,
       getUniqueMonthsWithTransactions,
-      markOnboardingComplete
+      markOnboardingComplete,
+      setUsername // Provide setUsername
     }}>
       {children}
     </AppContext.Provider>
