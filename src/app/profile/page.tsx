@@ -16,10 +16,10 @@ import { format, parseISO, startOfMonth, endOfMonth } from 'date-fns';
 import { Download, Edit3, Save } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner';
-import { LOCAL_STORAGE_KEY } from '@/lib/constants';
+// LOCAL_STORAGE_KEY is no longer directly needed here for removal
 import Image from 'next/image';
 import { formatCurrency } from '@/lib/utils';
-import { ThemeToggleButton } from '@/components/shared/ThemeToggleButton'; // Added import
+import { ThemeToggleButton } from '@/components/shared/ThemeToggleButton';
 
 
 const LazyOnboardingFlow = lazy(() => import('@/components/onboarding/OnboardingFlow'));
@@ -36,7 +36,8 @@ export default function ProfilePage() {
     username, 
     setUsername,
     profilePictureDataUri,
-    setProfilePicture
+    setProfilePicture,
+    resetApplicationData // Get the reset function from context
   } = useAppContext();
   
   const [profileName, setProfileName] = useState(username || ""); 
@@ -103,7 +104,7 @@ export default function ProfilePage() {
         });
         return;
       }
-      if (file.size > 2 * 1024 * 1024) {
+      if (file.size > 2 * 1024 * 1024) { // 2MB limit
         toast({
           title: "Upload Error",
           description: "Image size should not exceed 2MB.",
@@ -128,6 +129,7 @@ export default function ProfilePage() {
       };
       reader.readAsDataURL(file);
     }
+    // Clear the input value to allow re-uploading the same file if needed
     if (event.target) {
       event.target.value = "";
     }
@@ -138,6 +140,7 @@ export default function ProfilePage() {
       if (transaction.type !== 'expense') return false; 
 
       if (reportFilters.type && reportFilters.type !== 'all' && transaction.type !== reportFilters.type) {
+        // This condition is a bit redundant if initial filter is 'expense', but good for flexibility
         if (reportFilters.type !== 'expense') return false;
       }
       
@@ -257,7 +260,7 @@ export default function ProfilePage() {
   
   const handleManageData = () => {
     if (window.confirm("Are you sure you want to clear all your app data (transactions, categories, username, profile picture, and onboarding status)? This action cannot be undone.")) {
-      localStorage.removeItem(LOCAL_STORAGE_KEY);
+      resetApplicationData(); // Call the context function
       toast({
         title: "Data Cleared",
         description: "All application data has been removed. The app will now reload.",
@@ -387,6 +390,7 @@ export default function ProfilePage() {
         </CardHeader>
         <CardContent className="space-y-4">
           <TransactionFilterBar 
+            showFilters // Always show filters for report section
             onFilterChange={setReportFilters} 
             initialFilters={reportFilters} 
           />
@@ -417,6 +421,7 @@ export default function ProfilePage() {
   );
 }
 
+// Helper functions to correctly define start and end of day for filtering
 const startOfDay = (date: Date) => {
   const newDate = new Date(date);
   newDate.setHours(0, 0, 0, 0);
@@ -428,3 +433,5 @@ const endOfDay = (date: Date) => {
   newDate.setHours(23, 59, 59, 999);
   return newDate;
 };
+
+    

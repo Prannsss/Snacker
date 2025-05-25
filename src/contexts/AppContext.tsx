@@ -4,7 +4,7 @@
 import type { ReactNode } from 'react';
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useLocalStorage } from '@/hooks/use-local-storage';
-import type { Transaction, Category, StoredData, TransactionFilters } from '@/lib/types'; // Added TransactionFilters
+import type { Transaction, Category, StoredData, TransactionFilters } from '@/lib/types';
 import { LOCAL_STORAGE_KEY, ALL_DEFAULT_CATEGORIES } from '@/lib/constants';
 import { format, parseISO, startOfMonth, endOfMonth, isWithinInterval, getMonth, getYear } from 'date-fns';
 
@@ -40,7 +40,8 @@ interface AppContextType {
   markOnboardingComplete: () => void;
   setUsername: (name: string) => void;
   setProfilePicture: (dataUri: string) => void;
-  saveTransactionPageFilters: (filters: TransactionFilters) => void; // Function to save filters
+  saveTransactionPageFilters: (filters: TransactionFilters) => void;
+  resetApplicationData: () => void; // New function
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -51,7 +52,7 @@ const initialStoredData: StoredData = {
   userHasOnboarded: false,
   username: undefined,
   profilePictureDataUri: undefined,
-  transactionPageFilters: undefined, // Initialize
+  transactionPageFilters: undefined,
 };
 
 export function AppProvider({ children }: { children: ReactNode }) {
@@ -99,7 +100,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const userHasOnboarded = storedData.userHasOnboarded || false;
   const username = storedData.username;
   const profilePictureDataUri = storedData.profilePictureDataUri;
-  const transactionPageFilters = storedData.transactionPageFilters; // Get stored filters
+  const transactionPageFilters = storedData.transactionPageFilters;
 
   const isLoadingData = isLoadingInitialData || !isInitialized;
 
@@ -235,6 +236,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setStoredData(prev => ({ ...prev, transactionPageFilters: filtersToStore }));
   }, [setStoredData]);
 
+  const resetApplicationData = useCallback(() => {
+    if (typeof window !== 'undefined') {
+      window.localStorage.removeItem(LOCAL_STORAGE_KEY);
+    }
+    // Reset the state in the hook to initialValue
+    // The useLocalStorage hook handles this internally when it reads null
+    // For immediate React state update, we set it directly:
+    setStoredData(initialStoredData);
+  }, [setStoredData]);
+
 
   return (
     <AppContext.Provider value={{ 
@@ -244,7 +255,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       userHasOnboarded,
       username,
       profilePictureDataUri,
-      transactionPageFilters, // Provide stored filters
+      transactionPageFilters,
       addTransaction, 
       updateTransaction, 
       deleteTransaction, 
@@ -260,7 +271,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       markOnboardingComplete,
       setUsername,
       setProfilePicture,
-      saveTransactionPageFilters // Provide save function
+      saveTransactionPageFilters,
+      resetApplicationData // Provide the new function
     }}>
       {children}
     </AppContext.Provider>
