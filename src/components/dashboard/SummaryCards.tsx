@@ -1,6 +1,7 @@
 
 "use client";
 
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrendingUp, TrendingDown } from "lucide-react";
 import { useAppContext } from "@/contexts/AppContext";
@@ -10,7 +11,7 @@ interface SummaryCardsProps {
   currentMonth: Date;
 }
 
-export function SummaryCards({ currentMonth }: SummaryCardsProps) {
+export const SummaryCards = React.memo(function SummaryCards({ currentMonth }: SummaryCardsProps) {
   const { getMonthlySummary } = useAppContext();
   const { income, expenses, balance } = getMonthlySummary(currentMonth);
 
@@ -58,4 +59,4 @@ export function SummaryCards({ currentMonth }: SummaryCardsProps) {
       </div>
     </div>
   );
-}
+});

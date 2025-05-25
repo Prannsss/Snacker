@@ -5,17 +5,22 @@ import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { PageWrapper } from '@/components/shared/PageWrapper';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { SummaryCards } from '@/components/dashboard/SummaryCards';
-import { ExpenseChart } from '@/components/dashboard/ExpenseChart';
+// import { ExpenseChart } from '@/components/dashboard/ExpenseChart'; // Lazy loaded
 import { MonthSwitcher } from '@/components/dashboard/MonthSwitcher';
 import { TransactionList } from '@/components/transactions/TransactionList';
 import { useAppContext } from '@/contexts/AppContext';
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner';
 import { Button } from '@/components/ui/button';
 import { PlusCircle } from 'lucide-react';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const LazyAddTransactionDialog = lazy(() => import('@/components/transactions/AddTransactionDialog'));
 const LazyOnboardingFlow = lazy(() => import('@/components/onboarding/OnboardingFlow'));
 const LazyUsernamePrompt = lazy(() => import('@/components/onboarding/UsernamePrompt'));
+const LazyExpenseChart = lazy(() => 
+  import('@/components/dashboard/ExpenseChart').then(module => ({ default: module.ExpenseChart }))
+);
 
 
 export default function DashboardPage() {
@@ -90,7 +95,19 @@ export default function DashboardPage() {
       <MonthSwitcher currentMonth={currentMonth} onMonthChange={setCurrentMonth} />
       <SummaryCards currentMonth={currentMonth} />
       <div className="grid md:grid-cols-2 gap-6">
-        <ExpenseChart currentMonth={currentMonth} />
+        <Suspense fallback={
+          <Card className="shadow-lg">
+            <CardHeader>
+              <Skeleton className="h-6 w-3/4 mb-2" />
+              <Skeleton className="h-4 w-1/2" />
+            </CardHeader>
+            <CardContent className="flex items-center justify-center h-[300px]">
+              <LoadingSpinner size={36} />
+            </CardContent>
+          </Card>
+        }>
+          <LazyExpenseChart currentMonth={currentMonth} />
+        </Suspense>
         <TransactionList 
           transactions={sortedTransactions.slice(0, 5)} 
           title="Recent Transactions"

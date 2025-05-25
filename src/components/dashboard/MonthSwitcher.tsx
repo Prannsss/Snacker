@@ -1,5 +1,7 @@
+
 "use client";
 
+import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -11,7 +13,7 @@ interface MonthSwitcherProps {
   onMonthChange: (newMonth: Date) => void;
 }
 
-export function MonthSwitcher({ currentMonth, onMonthChange }: MonthSwitcherProps) {
+export const MonthSwitcher = React.memo(function MonthSwitcher({ currentMonth, onMonthChange }: MonthSwitcherProps) {
   const { getUniqueMonthsWithTransactions } = useAppContext();
   const availableMonths = getUniqueMonthsWithTransactions();
 
@@ -71,4 +73,4 @@ export function MonthSwitcher({ currentMonth, onMonthChange }: MonthSwitcherProp
       </Button>
     </div>
   );
-}
+});

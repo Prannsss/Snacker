@@ -4,20 +4,22 @@
 import React, { useState, useMemo, useEffect, Suspense, lazy } from 'react';
 import { PageWrapper } from '@/components/shared/PageWrapper';
 import { PageHeader } from '@/components/shared/PageHeader';
-import { TransactionCalendar } from '@/components/transactions/TransactionCalendar';
+// import { TransactionCalendar } from '@/components/transactions/TransactionCalendar'; // Lazy loaded
 import { TransactionList } from '@/components/transactions/TransactionList';
-// import { AddTransactionDialog } from '@/components/transactions/AddTransactionDialog'; // Lazy loaded
 import { TransactionFilterBar, type TransactionFilters } from '@/components/transactions/TransactionFilter';
 import { useAppContext } from '@/contexts/AppContext';
-import type { Transaction } from '@/lib/types';
-import { parseISO, isWithinInterval, startOfDay, endOfDay } from 'date-fns';
+import { parseISO, startOfDay, endOfDay } from 'date-fns';
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner';
-// import OnboardingFlow from '@/components/onboarding/OnboardingFlow'; // Lazy loaded
 import { Button } from '@/components/ui/button';
 import { PlusCircle } from 'lucide-react';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const LazyAddTransactionDialog = lazy(() => import('@/components/transactions/AddTransactionDialog'));
 const LazyOnboardingFlow = lazy(() => import('@/components/onboarding/OnboardingFlow'));
+const LazyTransactionCalendar = lazy(() => 
+  import('@/components/transactions/TransactionCalendar').then(module => ({ default: module.TransactionCalendar }))
+);
 
 export default function TransactionsPage() {
   const { transactions: allTransactions, isLoadingData, userHasOnboarded, markOnboardingComplete } = useAppContext();
@@ -81,7 +83,19 @@ export default function TransactionsPage() {
         } 
       />
       <TransactionFilterBar onFilterChange={setFilters} initialFilters={filters} />
-      <TransactionCalendar />
+      <Suspense fallback={
+        <div className="grid md:grid-cols-2 gap-6">
+          <Card className="shadow-lg">
+            <CardHeader><Skeleton className="h-6 w-1/2 mb-2" /></CardHeader>
+            <CardContent className="flex justify-center h-[350px] items-center"><LoadingSpinner size={36} /></CardContent>
+          </Card>
+          <Card className="shadow-sm h-full flex items-center justify-center">
+            <CardContent><Skeleton className="h-4 w-3/4" /></CardContent>
+          </Card>
+        </div>
+      }>
+        <LazyTransactionCalendar />
+      </Suspense>
       <div className="mt-6">
         <TransactionList 
           transactions={filteredTransactions} 

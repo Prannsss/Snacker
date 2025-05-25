@@ -16,7 +16,7 @@ import { Star } from 'lucide-react';
 const LazyAddTransactionDialog = lazy(() => import('./AddTransactionDialog'));
 
 
-export function TransactionItem({ transaction }: { transaction: Transaction }) {
+export const TransactionItem = React.memo(function TransactionItem({ transaction }: { transaction: Transaction }) {
   const { getCategoryById, deleteTransaction } = useAppContext();
   const category = getCategoryById(transaction.categoryId);
 
@@ -91,7 +91,7 @@ export function TransactionItem({ transaction }: { transaction: Transaction }) {
       </CardContent>
     </Card>
   );
-}
+});
 
 // Helper, as it's not in shadcn by default
 const buttonVariants = ({variant}: {variant: string}) => {

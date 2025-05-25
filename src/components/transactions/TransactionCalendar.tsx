@@ -1,14 +1,16 @@
+
 "use client";
 
-import { useState, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Calendar } from "@/components/ui/calendar";
 import { useAppContext } from "@/contexts/AppContext";
 import type { Transaction } from "@/lib/types";
-import { format, parseISO, isSameDay, startOfDay } from 'date-fns';
+import { format, parseISO, startOfDay } from 'date-fns';
 import { TransactionList } from './TransactionList';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
-export function TransactionCalendar() {
+// Renaming the component to avoid conflict when lazy loading
+function TransactionCalendarComponent() {
   const { transactions, getTransactionsByDate } = useAppContext();
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
 
@@ -71,3 +73,7 @@ export function TransactionCalendar() {
     </div>
   );
 }
+
+export { TransactionCalendarComponent as TransactionCalendar };
+// Exporting with the original name for consistency if other files import it directly (though lazy loading is preferred)
+export default TransactionCalendarComponent;

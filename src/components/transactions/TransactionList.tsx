@@ -1,5 +1,7 @@
+
 "use client";
 
+import React from 'react';
 import type { Transaction } from "@/lib/types";
 import { TransactionItem } from "./TransactionItem";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
@@ -11,7 +13,7 @@ interface TransactionListProps {
   emptyStateMessage?: string;
 }
 
-export function TransactionList({ 
+export const TransactionList = React.memo(function TransactionList({ 
   transactions, 
   title = "Recent Transactions",
   description,
@@ -45,4 +47,4 @@ export function TransactionList({
       </CardContent>
     </Card>
   );
-}
+});

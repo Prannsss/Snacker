@@ -1,5 +1,7 @@
+
 "use client";
 
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { useAppContext } from "@/contexts/AppContext";
@@ -9,7 +11,7 @@ interface ExpenseChartProps {
   currentMonth: Date;
 }
 
-export function ExpenseChart({ currentMonth }: ExpenseChartProps) {
+export const ExpenseChart = React.memo(function ExpenseChart({ currentMonth }: ExpenseChartProps) {
   const { getMonthlyExpenseDistribution } = useAppContext();
   const data = getMonthlyExpenseDistribution(currentMonth);
   const isMobile = useIsMobile();
@@ -66,4 +68,4 @@ export function ExpenseChart({ currentMonth }: ExpenseChartProps) {
       </CardContent>
     </Card>
   );
-}
+});
