@@ -8,14 +8,16 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { TransactionFilterBar, type TransactionFilters } from '@/components/transactions/TransactionFilter';
 import { useAppContext } from '@/contexts/AppContext';
 import type { Transaction } from '@/lib/types';
 import { format, parseISO, startOfMonth, endOfMonth } from 'date-fns';
-import { Download } from 'lucide-react';
+import { Download, Edit3, Save } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner';
 import { LOCAL_STORAGE_KEY } from '@/lib/constants';
+import Image from 'next/image';
 
 const LazyOnboardingFlow = lazy(() => import('@/components/onboarding/OnboardingFlow'));
 const LazyUsernamePrompt = lazy(() => import('@/components/onboarding/UsernamePrompt'));
@@ -28,27 +30,51 @@ export default function ProfilePage() {
     userHasOnboarded, 
     markOnboardingComplete, 
     isLoadingData,
-    username, // Get username
-    setUsername // Get setUsername
+    username, 
+    setUsername 
   } = useAppContext();
   
-  // Initialize profileName with username from context or "Guest User"
-  const [profileName, setProfileName] = useState(username || "Guest User"); 
+  const [profileName, setProfileName] = useState(username || ""); 
+  const { toast } = useToast();
   
   useEffect(() => {
-    setProfileName(username || "Guest User");
-  }, [username]);
+    // Initialize profileName from context or keep local changes if any
+    if (username && profileName !== username) {
+        // This ensures that if username changes in context (e.g. after clearing data),
+        // the input field reflects it, unless user is actively editing.
+        // For now, let's keep it simple: if username exists and profileName is empty, set it.
+        if(profileName === "") setProfileName(username);
+    } else if (!username && profileName === "") {
+        setProfileName("Guest User");
+    }
+  }, [username, profileName]);
 
   const [reportFilters, setReportFilters] = useState<TransactionFilters>({ 
     type: 'expense', 
     dateFrom: startOfMonth(new Date()), 
     dateTo: endOfMonth(new Date()),
   });
-  const { toast } = useToast();
+
 
   const handleUsernameSet = (name: string) => {
     setUsername(name);
-    setProfileName(name); // Also update local state if needed, though context should drive it
+    setProfileName(name); 
+  };
+
+  const handleSaveName = () => {
+    if (profileName.trim().length < 3) {
+      toast({
+        title: "Validation Error",
+        description: "Name must be at least 3 characters long.",
+        variant: "destructive",
+      });
+      return;
+    }
+    setUsername(profileName.trim());
+    toast({
+      title: "Profile Updated",
+      description: "Your name has been saved successfully.",
+    });
   };
 
   const filteredExpenses = useMemo(() => {
@@ -154,7 +180,7 @@ export default function ProfilePage() {
     );
   }
 
-  if (userHasOnboarded && !username) {
+  if (userHasOnboarded && !username) { // Check username from context directly
      return (
       <Suspense fallback={
         <div className="flex flex-col items-center justify-center flex-grow min-h-screen">
@@ -177,11 +203,30 @@ export default function ProfilePage() {
         <CardHeader>
           <CardTitle>Your Profile</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <Label htmlFor="profileName">Name</Label>
-            <Input id="profileName" value={profileName} onChange={(e) => setProfileName(e.target.value)} disabled />
-            <p className="text-sm text-muted-foreground mt-1">Profile editing is not yet available.</p>
+        <CardContent className="space-y-6">
+          <div className="flex flex-col items-center sm:flex-row sm:items-start gap-6">
+            <div className="relative group">
+              <Avatar className="h-24 w-24">
+                <AvatarImage src="https://placehold.co/96x96.png" alt={profileName} data-ai-hint="profile avatar" />
+                <AvatarFallback>{profileName.substring(0, 2).toUpperCase() || 'SN'}</AvatarFallback>
+              </Avatar>
+              <Button variant="outline" size="icon" className="absolute bottom-0 right-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => toast({ title: "Feature Coming Soon", description: "Profile picture uploads will be available in a future update."})}>
+                <Edit3 className="h-4 w-4" />
+                <span className="sr-only">Upload Picture</span>
+              </Button>
+            </div>
+            <div className="flex-grow w-full sm:w-auto">
+              <Label htmlFor="profileName">Name</Label>
+              <Input 
+                id="profileName" 
+                value={profileName} 
+                onChange={(e) => setProfileName(e.target.value)} 
+                className="mt-1"
+              />
+              <Button onClick={handleSaveName} className="mt-3 w-full sm:w-auto">
+                <Save className="mr-2 h-4 w-4" /> Save Name
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -234,3 +279,6 @@ const endOfDay = (date: Date) => {
   newDate.setHours(23, 59, 59, 999);
   return newDate;
 };
+
+
+    
