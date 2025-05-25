@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState, useMemo, useEffect, Suspense, lazy, useCallback } from 'react'; // Added useCallback
+import React, { useState, useMemo, useEffect, Suspense, lazy, useCallback } from 'react'; 
 import { PageWrapper } from '@/components/shared/PageWrapper';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { TransactionList } from '@/components/transactions/TransactionList';
@@ -27,12 +27,11 @@ export default function TransactionsPage() {
     isLoadingData, 
     userHasOnboarded, 
     markOnboardingComplete,
-    transactionPageFilters, // Get saved filters
-    saveTransactionPageFilters, // Get save function
-    getCategoryById // Added for useMemo dependency
+    transactionPageFilters, 
+    saveTransactionPageFilters, 
+    getCategoryById 
   } = useAppContext();
 
-  // Initialize filters: try loading from context, else default
   const [filters, setFilters] = useState<TransactionFilters>(() => {
     if (transactionPageFilters) {
       return {
@@ -41,17 +40,17 @@ export default function TransactionsPage() {
         dateTo: transactionPageFilters.dateTo ? parseISO(transactionPageFilters.dateTo) : undefined,
       };
     }
-    return {}; // Default to empty filters or a specific range like current month
+    return {}; 
   });
   
-  const [showFilters, setShowFilters] = useState(false); // State to control filter visibility
+  const [showFilters, setShowFilters] = useState(false); 
 
   const handleFilterChange = useCallback((newFilters: TransactionFilters) => {
     setFilters(newFilters);
-    if (saveTransactionPageFilters) { // Guard against saveTransactionPageFilters being undefined initially
-        saveTransactionPageFilters(newFilters); // Auto-save filters
+    if (saveTransactionPageFilters) { 
+        saveTransactionPageFilters(newFilters); 
     }
-  }, [saveTransactionPageFilters]); // setFilters from useState is stable
+  }, [saveTransactionPageFilters]); 
 
   const filteredTransactions = useMemo(() => {
     return allTransactions.filter(transaction => {
@@ -66,13 +65,13 @@ export default function TransactionsPage() {
         const searchTermLower = filters.searchTerm.toLowerCase();
         const notesMatch = transaction.notes?.toLowerCase().includes(searchTermLower);
         const amountMatch = transaction.amount.toString().includes(searchTermLower);
-        const category = getCategoryById(transaction.categoryId); // Use getCategoryById from context
+        const category = getCategoryById(transaction.categoryId); 
         const categoryNameMatch = category?.name.toLowerCase().includes(searchTermLower);
         if (!notesMatch && !amountMatch && !categoryNameMatch) return false;
       }
       return true;
     }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  }, [allTransactions, filters, getCategoryById]); // Added getCategoryById
+  }, [allTransactions, filters, getCategoryById]); 
 
 
   if (isLoadingData) {
@@ -132,11 +131,14 @@ export default function TransactionsPage() {
         </div>
       </div>
       
-      <TransactionFilterBar 
-        showFilters={showFilters}
-        onFilterChange={handleFilterChange} 
-        initialFilters={filters} 
-      />
+      {showFilters && (
+        <div className="mb-6">
+          <TransactionFilterBar 
+            onFilterChange={handleFilterChange} 
+            initialFilters={filters} 
+          />
+        </div>
+      )}
 
       <Suspense fallback={
         <div className="grid md:grid-cols-2 gap-6">

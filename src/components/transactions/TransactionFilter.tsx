@@ -9,8 +9,8 @@ import { Calendar } from "@/components/ui/calendar";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { CalendarIcon, SearchIcon, XIcon } from "lucide-react"; // FilterIcon removed as it's now managed by parent
-import { format, parseISO, startOfMonth, endOfMonth } from 'date-fns';
+import { CalendarIcon, SearchIcon, XIcon } from "lucide-react";
+import { format, startOfMonth, endOfMonth } from 'date-fns';
 import { useAppContext } from "@/contexts/AppContext";
 import { cn } from '@/lib/utils';
 
@@ -25,12 +25,12 @@ export interface TransactionFilters {
 interface TransactionFilterProps {
   onFilterChange: (filters: TransactionFilters) => void;
   initialFilters?: TransactionFilters;
-  showFilters: boolean; // New prop to control visibility
+  // showFilters prop removed
 }
 
 const ALL_CATEGORIES_VALUE = "_all_"; 
 
-export function TransactionFilterBar({ onFilterChange, initialFilters, showFilters }: TransactionFilterProps) {
+export function TransactionFilterBar({ onFilterChange, initialFilters }: TransactionFilterProps) {
   const { categories } = useAppContext();
   const [filters, setFilters] = useState<TransactionFilters>(initialFilters || {
     type: 'all',
@@ -38,7 +38,7 @@ export function TransactionFilterBar({ onFilterChange, initialFilters, showFilte
     dateTo: endOfMonth(new Date()),
   });
 
-  // Sync internal filters with initialFilters if they change (e.g. loaded from storage)
+  // Sync internal filters with initialFilters if they change (e.g. loaded from storage or parent update)
   useEffect(() => {
     if (initialFilters) {
       setFilters(initialFilters);
@@ -66,18 +66,16 @@ export function TransactionFilterBar({ onFilterChange, initialFilters, showFilte
       searchTerm: undefined,
     };
     setFilters(defaultFilters);
-    // onFilterChange(defaultFilters); // This will be triggered by the useEffect above
+    // onFilterChange will be triggered by the useEffect above
   };
 
   const incomeCategories = categories.filter(c => c.type === 'income');
   const expenseCategories = categories.filter(c => c.type === 'expense');
 
-  if (!showFilters) {
-    return null; // Don't render anything if filters are hidden
-  }
+  // Removed conditional return based on showFilters
 
   return (
-    <div id="transaction-filter-controls" className="space-y-4 mb-6"> {/* Added mb-6, removed outer div */}
+    <div id="transaction-filter-controls" className="space-y-4"> {/* Removed mb-6 */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {/* Search Term */}
         <div className="space-y-1">

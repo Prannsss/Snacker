@@ -13,13 +13,13 @@ import { TransactionFilterBar, type TransactionFilters } from '@/components/tran
 import { useAppContext } from '@/contexts/AppContext';
 import type { Transaction } from '@/lib/types';
 import { format, parseISO, startOfMonth, endOfMonth } from 'date-fns';
-import { Download, Edit3, Save } from 'lucide-react';
+import { Download, Edit3, Save, FilterIcon } from 'lucide-react'; // Added FilterIcon
 import { useToast } from '@/hooks/use-toast';
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner';
-// LOCAL_STORAGE_KEY is no longer directly needed here for removal
 import Image from 'next/image';
 import { formatCurrency } from '@/lib/utils';
 import { ThemeToggleButton } from '@/components/shared/ThemeToggleButton';
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"; // Added Popover imports
 
 
 const LazyOnboardingFlow = lazy(() => import('@/components/onboarding/OnboardingFlow'));
@@ -37,7 +37,7 @@ export default function ProfilePage() {
     setUsername,
     profilePictureDataUri,
     setProfilePicture,
-    resetApplicationData // Get the reset function from context
+    resetApplicationData 
   } = useAppContext();
   
   const [profileName, setProfileName] = useState(username || ""); 
@@ -129,7 +129,6 @@ export default function ProfilePage() {
       };
       reader.readAsDataURL(file);
     }
-    // Clear the input value to allow re-uploading the same file if needed
     if (event.target) {
       event.target.value = "";
     }
@@ -140,7 +139,6 @@ export default function ProfilePage() {
       if (transaction.type !== 'expense') return false; 
 
       if (reportFilters.type && reportFilters.type !== 'all' && transaction.type !== reportFilters.type) {
-        // This condition is a bit redundant if initial filter is 'expense', but good for flexibility
         if (reportFilters.type !== 'expense') return false;
       }
       
@@ -260,7 +258,7 @@ export default function ProfilePage() {
   
   const handleManageData = () => {
     if (window.confirm("Are you sure you want to clear all your app data (transactions, categories, username, profile picture, and onboarding status)? This action cannot be undone.")) {
-      resetApplicationData(); // Call the context function
+      resetApplicationData(); 
       toast({
         title: "Data Cleared",
         description: "All application data has been removed. The app will now reload.",
@@ -389,11 +387,20 @@ export default function ProfilePage() {
           <CardDescription>Filter and download your expense transactions as an HTML file.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <TransactionFilterBar 
-            showFilters // Always show filters for report section
-            onFilterChange={setReportFilters} 
-            initialFilters={reportFilters} 
-          />
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className="w-full md:w-auto">
+                <FilterIcon className="mr-2 h-4 w-4" />
+                Configure Filters
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="p-4 w-full max-w-xl">
+              <TransactionFilterBar 
+                onFilterChange={setReportFilters} 
+                initialFilters={reportFilters} 
+              />
+            </PopoverContent>
+          </Popover>
           <p className="text-sm text-muted-foreground">
             {filteredExpenses.length} expense(s) match your current filters.
           </p>
