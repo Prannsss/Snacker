@@ -1,9 +1,10 @@
+
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import { AppProviders } from '@/components/shared/AppProviders';
 import { Toaster } from '@/components/ui/toaster';
-import { BottomNavigation, DesktopSidebar } from '@/components/shared/BottomNavigation';
+import { MainAppShell } from '@/components/shared/MainAppShell'; // Changed import
 import { cn } from '@/lib/utils';
 
 const geistSans = Geist({
@@ -35,13 +36,7 @@ export default function RootLayout({
         )}
       >
         <AppProviders>
-          <div className="flex flex-1">
-            <DesktopSidebar />
-            <main className="flex-1 flex flex-col pb-16 md:pb-0"> {/* Padding bottom for mobile nav */}
-              {children}
-            </main>
-          </div>
-          <BottomNavigation />
+          <MainAppShell>{children}</MainAppShell> {/* Use MainAppShell */}
           <Toaster />
         </AppProviders>
       </body>
