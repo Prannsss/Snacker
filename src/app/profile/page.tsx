@@ -455,6 +455,7 @@ export default function ProfilePage() {
            </p>
         </CardContent>
       </Card>
+      <p className="text-center text-xs text-muted-foreground py-6">Developed by France Laurence Velarde</p>
     </PageWrapper>
   );
 }
@@ -471,7 +472,5 @@ const endOfDay = (date: Date) => {
   newDate.setHours(23, 59, 59, 999);
   return newDate;
 };
-
-    
 
     
