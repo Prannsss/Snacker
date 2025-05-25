@@ -180,7 +180,7 @@ export function TransactionForm({ transaction, onSubmitSuccess, dialogFooter, fo
               <FormLabel>Category</FormLabel>
               <Select 
                 onValueChange={field.onChange} 
-                value={field.value} // Ensure value is controlled
+                value={field.value || ""} // Ensure value is controlled and defaults to "" if undefined/null
                 key={transactionType} // Re-render select when type changes to clear value if needed
               >
                 <FormControl>
