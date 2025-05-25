@@ -78,12 +78,12 @@ export default function DashboardPage() {
 
   return (
     <PageWrapper>
-      <div className="sticky top-0 z-30 bg-background/80 backdrop-blur-md shadow-sm -mx-4 md:-mx-6 px-4 md:px-6 py-3 mb-4">
+      <div className="sticky top-0 z-30 bg-background/80 backdrop-blur-md shadow-sm -mx-4 md:-mx-6 pl-6 pr-4 md:pl-8 md:pr-6 py-3 mb-4">
         <PageHeader title="Dashboard" />
       </div>
       
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-3xl font-semibold text-foreground">Good Day, {username}!</h2>
+        <h2 className="text-3xl font-semibold text-foreground pl-2">Good Day, {username}!</h2>
         <Suspense fallback={
           <Button variant="default" size="lg" className="fixed bottom-20 right-4 md:static md:bottom-auto md:right-auto rounded-full p-4 shadow-lg md:rounded-md md:p-2 md:shadow-none" disabled>
             <PlusCircle className="h-6 w-6 md:mr-2" />
@@ -121,4 +121,3 @@ export default function DashboardPage() {
     </PageWrapper>
   );
 }
-
