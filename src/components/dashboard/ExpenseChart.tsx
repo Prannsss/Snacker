@@ -48,7 +48,18 @@ export const ExpenseChart = React.memo(function ExpenseChart({ currentMonth }: E
               fill="#8884d8"
               dataKey="value"
               nameKey="name"
-              label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+              label={({ name, percent }) => {
+                const percentageValue = percent * 100;
+                if (isMobile) {
+                  // On mobile, only show label if percentage is >= 5% to avoid clutter
+                  if (percentageValue < 5) {
+                    return null; // Don't render label for very small slices on mobile
+                  }
+                  return `${percentageValue.toFixed(0)}%`;
+                }
+                // On desktop, show name and percentage
+                return `${name} ${percentageValue.toFixed(0)}%`;
+              }}
             >
               {data.map((entry, index) => (
                 <Cell key={`cell-${index}`} fill={entry.fill || `hsl(var(--chart-${(index % 5) + 1}))`} />
@@ -69,3 +80,4 @@ export const ExpenseChart = React.memo(function ExpenseChart({ currentMonth }: E
     </Card>
   );
 });
+
