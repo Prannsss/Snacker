@@ -1,5 +1,7 @@
+
 "use client";
 
+import React, { Suspense, lazy } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import type { Transaction } from "@/lib/types";
@@ -8,8 +10,10 @@ import { formatCurrency, cn } from "@/lib/utils";
 import { format, parseISO } from 'date-fns';
 import * as LucideIcons from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { AddTransactionDialog } from "./AddTransactionDialog";
+// import { AddTransactionDialog } from "./AddTransactionDialog"; // Lazy loaded
 import { Star } from 'lucide-react';
+
+const LazyAddTransactionDialog = lazy(() => import('./AddTransactionDialog'));
 
 
 export function TransactionItem({ transaction }: { transaction: Transaction }) {
@@ -46,14 +50,20 @@ export function TransactionItem({ transaction }: { transaction: Transaction }) {
             )}
           </div>
           
-          <AddTransactionDialog 
-            transactionToEdit={transaction}
-            trigger={
-              <Button variant="ghost" size="icon" className="h-8 w-8">
-                <LucideIcons.Edit2 className="h-4 w-4" />
-              </Button>
-            }
-          />
+          <Suspense fallback={
+            <Button variant="ghost" size="icon" className="h-8 w-8" disabled>
+              <LucideIcons.Edit2 className="h-4 w-4" />
+            </Button>
+          }>
+            <LazyAddTransactionDialog 
+              transactionToEdit={transaction}
+              trigger={
+                <Button variant="ghost" size="icon" className="h-8 w-8">
+                  <LucideIcons.Edit2 className="h-4 w-4" />
+                </Button>
+              }
+            />
+          </Suspense>
           
           <AlertDialog>
             <AlertDialogTrigger asChild>

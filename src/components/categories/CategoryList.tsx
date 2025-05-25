@@ -1,13 +1,17 @@
+
 "use client";
 
+import React, { Suspense, lazy } from 'react';
 import { useAppContext } from "@/contexts/AppContext";
 import type { Category } from "@/lib/types";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import * as LucideIcons from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { AddCategoryDialog } from "./AddCategoryDialog";
+// import { AddCategoryDialog } from "./AddCategoryDialog"; // Lazy loaded
 import { Badge } from "@/components/ui/badge";
+
+const LazyAddCategoryDialog = lazy(() => import('./AddCategoryDialog'));
 
 export function CategoryList() {
   const { categories, deleteCategory } = useAppContext();
@@ -45,14 +49,20 @@ export function CategoryList() {
                   <span>{cat.name}</span>
                 </div>
                 <div className="space-x-2">
-                  <AddCategoryDialog 
-                    categoryToEdit={cat}
-                    trigger={
-                      <Button variant="ghost" size="icon" className="h-8 w-8">
-                        <LucideIcons.Edit2 className="h-4 w-4" />
-                      </Button>
-                    }
-                  />
+                  <Suspense fallback={
+                    <Button variant="ghost" size="icon" className="h-8 w-8" disabled>
+                      <LucideIcons.Edit2 className="h-4 w-4" />
+                    </Button>
+                  }>
+                    <LazyAddCategoryDialog 
+                      categoryToEdit={cat}
+                      trigger={
+                        <Button variant="ghost" size="icon" className="h-8 w-8">
+                          <LucideIcons.Edit2 className="h-4 w-4" />
+                        </Button>
+                      }
+                    />
+                  </Suspense>
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
                        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10">
