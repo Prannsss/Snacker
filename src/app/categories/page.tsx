@@ -41,18 +41,20 @@ export default function CategoriesPage() {
 
   return (
     <PageWrapper>
-      <PageHeader 
-        title="Manage Categories" 
-        actions={
-          <Suspense fallback={
-            <Button disabled>
-              <PlusCircle className="mr-2 h-4 w-4" /> Add Category
-            </Button>
-          }>
-            <LazyAddCategoryDialog />
-          </Suspense>
-        } 
-      />
+      <div className="sticky top-0 z-30 bg-background/80 backdrop-blur-md shadow-sm -mx-4 md:-mx-6 pl-6 pr-4 md:pl-8 md:pr-6 py-3 mb-4">
+        <PageHeader 
+          title="Manage Categories" 
+          actions={
+            <Suspense fallback={
+              <Button disabled>
+                <PlusCircle className="mr-2 h-4 w-4" /> Add Category
+              </Button>
+            }>
+              <LazyAddCategoryDialog />
+            </Suspense>
+          } 
+        />
+      </div>
       <CategoryList />
     </PageWrapper>
   );

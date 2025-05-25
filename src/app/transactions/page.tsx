@@ -69,19 +69,21 @@ export default function TransactionsPage() {
 
   return (
     <PageWrapper>
-      <PageHeader 
-        title="Transactions" 
-        actions={
-          <Suspense fallback={
-            <Button variant="default" size="lg" className="fixed bottom-20 right-4 md:static md:bottom-auto md:right-auto rounded-full p-4 shadow-lg md:rounded-md md:p-2 md:shadow-none" disabled>
-              <PlusCircle className="h-6 w-6 md:mr-2" />
-              <span className="hidden md:inline">Add Transaction</span>
-            </Button>
-          }>
-            <LazyAddTransactionDialog />
-          </Suspense>
-        } 
-      />
+      <div className="sticky top-0 z-30 bg-background/80 backdrop-blur-md shadow-sm -mx-4 md:-mx-6 pl-6 pr-4 md:pl-8 md:pr-6 py-3 mb-4">
+        <PageHeader 
+          title="Transactions" 
+          actions={
+            <Suspense fallback={
+              <Button variant="default" size="lg" className="fixed bottom-20 right-4 md:static md:bottom-auto md:right-auto rounded-full p-4 shadow-lg md:rounded-md md:p-2 md:shadow-none" disabled>
+                <PlusCircle className="h-6 w-6 md:mr-2" />
+                <span className="hidden md:inline">Add Transaction</span>
+              </Button>
+            }>
+              <LazyAddTransactionDialog />
+            </Suspense>
+          } 
+        />
+      </div>
       <TransactionFilterBar onFilterChange={setFilters} initialFilters={filters} />
       <Suspense fallback={
         <div className="grid md:grid-cols-2 gap-6">
