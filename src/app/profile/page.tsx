@@ -13,13 +13,24 @@ import { TransactionFilterBar, type TransactionFilters } from '@/components/tran
 import { useAppContext } from '@/contexts/AppContext';
 import type { Transaction } from '@/lib/types';
 import { format, parseISO, startOfMonth, endOfMonth } from 'date-fns';
-import { Download, Edit3, Save, FilterIcon } from 'lucide-react'; // Added FilterIcon
+import { Download, Edit3, Save, FilterIcon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner';
 import Image from 'next/image';
 import { formatCurrency } from '@/lib/utils';
 import { ThemeToggleButton } from '@/components/shared/ThemeToggleButton';
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"; // Added Popover imports
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 
 const LazyOnboardingFlow = lazy(() => import('@/components/onboarding/OnboardingFlow'));
@@ -256,17 +267,15 @@ export default function ProfilePage() {
 
   }, [filteredExpenses, getCategoryById, toast, reportFilters.dateFrom, reportFilters.dateTo, reportFilters.categoryId]);
   
-  const handleManageData = () => {
-    if (window.confirm("Are you sure you want to clear all your app data (transactions, categories, username, profile picture, and onboarding status)? This action cannot be undone.")) {
-      resetApplicationData(); 
-      toast({
-        title: "Data Cleared",
-        description: "All application data has been removed. The app will now reload.",
-      });
-      setTimeout(() => {
-        window.location.reload();
-      }, 1500);
-    }
+  const handleConfirmClearData = () => {
+    resetApplicationData(); 
+    toast({
+      title: "Data Cleared",
+      description: "All application data has been removed. The app will now reload.",
+    });
+    setTimeout(() => {
+      window.location.reload();
+    }, 1500);
   };
 
   if (isLoadingData) {
@@ -418,7 +427,29 @@ export default function ProfilePage() {
           <CardDescription>Manage your application data stored in your browser.</CardDescription>
         </CardHeader>
         <CardContent>
-           <Button variant="destructive" onClick={handleManageData}>Clear All App Data</Button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="destructive">Clear All App Data</Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone. This will permanently delete all your transactions, 
+                  categories, username, profile picture, and onboarding status from this browser.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction 
+                  onClick={handleConfirmClearData} 
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                >
+                  Yes, clear data
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
            <p className="text-sm text-muted-foreground mt-2">
              Warning: This will remove all your transactions, categories, username, profile picture, and onboarding status permanently.
            </p>
@@ -440,5 +471,7 @@ const endOfDay = (date: Date) => {
   newDate.setHours(23, 59, 59, 999);
   return newDate;
 };
+
+    
 
     
