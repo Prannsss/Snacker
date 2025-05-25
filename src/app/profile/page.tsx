@@ -18,6 +18,10 @@ import { useToast } from '@/hooks/use-toast';
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner';
 import { LOCAL_STORAGE_KEY } from '@/lib/constants';
 import Image from 'next/image'; // Keep for NextImage if used elsewhere, not for AvatarImage src
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import { formatCurrency } from '@/lib/utils';
+
 
 const LazyOnboardingFlow = lazy(() => import('@/components/onboarding/OnboardingFlow'));
 const LazyUsernamePrompt = lazy(() => import('@/components/onboarding/UsernamePrompt'));
@@ -168,38 +172,55 @@ export default function ProfilePage() {
       return;
     }
 
-    const headers = ["Date", "Category", "Amount", "Notes"];
-    const csvRows = [
-      headers.join(','),
-      ...filteredExpenses.map(tx => {
-        const categoryName = getCategoryById(tx.categoryId)?.name || "N/A";
-        const notes = tx.notes ? `"${tx.notes.replace(/"/g, '""')}"` : "";
-        return [
-          format(parseISO(tx.date), "yyyy-MM-dd"),
-          categoryName,
-          tx.amount.toFixed(2),
-          notes
-        ].join(',');
-      })
-    ];
-    const csvString = csvRows.join('\n');
-    const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    if (link.download !== undefined) {
-      const url = URL.createObjectURL(blob);
-      link.setAttribute('href', url);
-      link.setAttribute('download', `snacker_expense_report_${format(new Date(), "yyyyMMdd_HHmmss")}.csv`);
-      link.style.visibility = 'hidden';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-      toast({
-        title: "Report Downloaded",
-        description: "Your expense report has been successfully downloaded.",
-      });
+    const doc = new jsPDF();
+    const reportDate = format(new Date(), "MMMM d, yyyy");
+    const filterDateFromString = reportFilters.dateFrom ? format(reportFilters.dateFrom, "MMM d, yyyy") : 'Start';
+    const filterDateToString = reportFilters.dateTo ? format(reportFilters.dateTo, "MMM d, yyyy") : 'End';
+
+    doc.setFontSize(18);
+    doc.text("Snacker Expense Report", 14, 22);
+    doc.setFontSize(11);
+    doc.setTextColor(100);
+    doc.text(`Generated on: ${reportDate}`, 14, 29);
+    doc.text(`Filters Applied: ${filterDateFromString} to ${filterDateToString}`, 14, 36);
+    if (reportFilters.categoryId) {
+      const cat = getCategoryById(reportFilters.categoryId);
+      doc.text(`Category: ${cat ? cat.name : 'Unknown'}`, 14, 43)
     }
-  }, [filteredExpenses, getCategoryById, toast]);
+
+
+    const tableColumn = ["Date", "Category", "Amount", "Notes"];
+    const tableRows: (string | number)[][] = [];
+
+    filteredExpenses.forEach(tx => {
+      const categoryName = getCategoryById(tx.categoryId)?.name || "N/A";
+      const notes = tx.notes || "";
+      const transactionData = [
+        format(parseISO(tx.date), "yyyy-MM-dd"),
+        categoryName,
+        formatCurrency(tx.amount), 
+        notes
+      ];
+      tableRows.push(transactionData);
+    });
+
+    autoTable(doc, {
+      head: [tableColumn],
+      body: tableRows,
+      startY: reportFilters.categoryId ? 50 : 43, // Adjust startY based on whether category filter text is present
+      headStyles: { fillColor: [30, 105, 30] }, // Deep Green color for header
+      styles: { font: "helvetica", fontSize: 10 },
+      alternateRowStyles: { fillColor: [241, 248, 233] }, // Light green for alternate rows
+    });
+    
+    doc.save(`snacker_expense_report_${format(new Date(), "yyyyMMdd_HHmmss")}.pdf`);
+
+    toast({
+      title: "Report Downloaded",
+      description: "Your expense report has been successfully downloaded as a PDF.",
+    });
+
+  }, [filteredExpenses, getCategoryById, toast, reportFilters.dateFrom, reportFilters.dateTo, reportFilters.categoryId]);
   
   const handleManageData = () => {
     if (window.confirm("Are you sure you want to clear all your app data (transactions, categories, username, profile picture, and onboarding status)? This action cannot be undone.")) {
@@ -326,7 +347,7 @@ export default function ProfilePage() {
       <Card className="shadow-sm">
         <CardHeader>
           <CardTitle>Download Expense Report</CardTitle>
-          <CardDescription>Filter and download your expense transactions as a CSV file.</CardDescription>
+          <CardDescription>Filter and download your expense transactions as a PDF file.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <TransactionFilterBar 
@@ -339,7 +360,7 @@ export default function ProfilePage() {
         </CardContent>
         <CardFooter>
           <Button onClick={handleDownloadReport} disabled={filteredExpenses.length === 0}>
-            <Download className="mr-2 h-4 w-4" /> Download Report
+            <Download className="mr-2 h-4 w-4" /> Download PDF Report
           </Button>
         </CardFooter>
       </Card>
@@ -371,3 +392,6 @@ const endOfDay = (date: Date) => {
   newDate.setHours(23, 59, 59, 999);
   return newDate;
 };
+
+
+    
