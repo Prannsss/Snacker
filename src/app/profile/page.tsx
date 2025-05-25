@@ -35,19 +35,17 @@ export default function ProfilePage() {
   } = useAppContext();
   
   const [profileName, setProfileName] = useState(username || ""); 
+  const [isEditingName, setIsEditingName] = useState(false);
   const { toast } = useToast();
   
   useEffect(() => {
-    // Initialize profileName from context or keep local changes if any
-    if (username && profileName !== username) {
-        // This ensures that if username changes in context (e.g. after clearing data),
-        // the input field reflects it, unless user is actively editing.
-        // For now, let's keep it simple: if username exists and profileName is empty, set it.
-        if(profileName === "") setProfileName(username);
-    } else if (!username && profileName === "") {
-        setProfileName("Guest User");
+    if (username && !isEditingName) {
+      setProfileName(username);
+    } else if (!username && !isEditingName) {
+      setProfileName(""); 
     }
-  }, [username, profileName]);
+  }, [username, isEditingName, setProfileName]);
+
 
   const [reportFilters, setReportFilters] = useState<TransactionFilters>({ 
     type: 'expense', 
@@ -59,6 +57,7 @@ export default function ProfilePage() {
   const handleUsernameSet = (name: string) => {
     setUsername(name);
     setProfileName(name); 
+    setIsEditingName(false); // Exit edit mode after initial username set
   };
 
   const handleSaveName = () => {
@@ -71,10 +70,16 @@ export default function ProfilePage() {
       return;
     }
     setUsername(profileName.trim());
+    setIsEditingName(false);
     toast({
       title: "Profile Updated",
       description: "Your name has been saved successfully.",
     });
+  };
+
+  const handleCancelEditName = () => {
+    setIsEditingName(false);
+    setProfileName(username || ""); // Reset to context username
   };
 
   const filteredExpenses = useMemo(() => {
@@ -180,7 +185,7 @@ export default function ProfilePage() {
     );
   }
 
-  if (userHasOnboarded && !username) { // Check username from context directly
+  if (userHasOnboarded && !username) { 
      return (
       <Suspense fallback={
         <div className="flex flex-col items-center justify-center flex-grow min-h-screen">
@@ -201,31 +206,61 @@ export default function ProfilePage() {
       
       <Card className="shadow-sm">
         <CardHeader>
-          <CardTitle>Your Profile</CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle>Your Profile</CardTitle>
+            {!isEditingName && username && (
+              <Button variant="outline" size="icon" onClick={() => setIsEditingName(true)}>
+                <Edit3 className="h-4 w-4" />
+                <span className="sr-only">Edit Name</span>
+              </Button>
+            )}
+          </div>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="flex flex-col items-center sm:flex-row sm:items-start gap-6">
+          <div className="flex flex-col items-center gap-4">
             <div className="relative group">
               <Avatar className="h-24 w-24">
-                <AvatarImage src="https://placehold.co/96x96.png" alt={profileName} data-ai-hint="profile avatar" />
-                <AvatarFallback>{profileName.substring(0, 2).toUpperCase() || 'SN'}</AvatarFallback>
+                <AvatarImage src="https://placehold.co/96x96.png" alt={profileName || 'User'} data-ai-hint="profile avatar" />
+                <AvatarFallback>{profileName?.substring(0, 2).toUpperCase() || 'SN'}</AvatarFallback>
               </Avatar>
               <Button variant="outline" size="icon" className="absolute bottom-0 right-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => toast({ title: "Feature Coming Soon", description: "Profile picture uploads will be available in a future update."})}>
                 <Edit3 className="h-4 w-4" />
                 <span className="sr-only">Upload Picture</span>
               </Button>
             </div>
-            <div className="flex-grow w-full sm:w-auto">
-              <Label htmlFor="profileName">Name</Label>
-              <Input 
-                id="profileName" 
-                value={profileName} 
-                onChange={(e) => setProfileName(e.target.value)} 
-                className="mt-1"
-              />
-              <Button onClick={handleSaveName} className="mt-3 w-full sm:w-auto">
-                <Save className="mr-2 h-4 w-4" /> Save Name
-              </Button>
+
+            <div className="w-full max-w-xs text-center">
+              {isEditingName ? (
+                <div className="space-y-3">
+                  <Label htmlFor="profileNameInput" className="font-medium text-sm text-muted-foreground">Edit Your Name</Label>
+                  <Input
+                    id="profileNameInput"
+                    value={profileName}
+                    onChange={(e) => setProfileName(e.target.value)}
+                    className="mt-1 text-lg"
+                    placeholder="Enter your name"
+                  />
+                  <div className="flex gap-2 mt-3 justify-center">
+                    <Button onClick={handleSaveName}>
+                      <Save className="mr-2 h-4 w-4" /> Save Name
+                    </Button>
+                    <Button variant="outline" onClick={handleCancelEditName}>
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-xl font-semibold">
+                  {profileName || (
+                    <span 
+                      className="text-muted-foreground italic text-base font-normal cursor-pointer hover:underline"
+                      onClick={() => setIsEditingName(true)}
+                    >
+                      Set your name
+                    </span>
+                  )}
+                </p>
+              )}
             </div>
           </div>
         </CardContent>
@@ -279,6 +314,3 @@ const endOfDay = (date: Date) => {
   newDate.setHours(23, 59, 59, 999);
   return newDate;
 };
-
-
-    
