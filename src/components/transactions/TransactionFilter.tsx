@@ -13,7 +13,6 @@ import { CalendarIcon, FilterIcon, SearchIcon, XIcon } from "lucide-react";
 import { format, parseISO, startOfMonth, endOfMonth } from 'date-fns';
 import { useAppContext } from "@/contexts/AppContext";
 import type { Transaction } from "@/lib/types";
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 
 export interface TransactionFilters {
@@ -29,7 +28,7 @@ interface TransactionFilterProps {
   initialFilters?: TransactionFilters;
 }
 
-const ALL_CATEGORIES_VALUE = "__ALL_CATEGORIES__"; // Unique value for "All Categories"
+const ALL_CATEGORIES_VALUE = "_all_"; 
 
 export function TransactionFilterBar({ onFilterChange, initialFilters }: TransactionFilterProps) {
   const { categories } = useAppContext();
@@ -68,16 +67,17 @@ export function TransactionFilterBar({ onFilterChange, initialFilters }: Transac
   const expenseCategories = categories.filter(c => c.type === 'expense');
 
   return (
-    <Card className="mb-6 shadow-sm">
-      <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-lg">Filter Transactions</CardTitle>
-        <Button variant="ghost" size="icon" onClick={() => setShowFilters(!showFilters)}>
+    <div className="mb-6">
+      <div className="flex items-center justify-between pb-2 mb-4 border-b">
+        <h3 className="text-lg font-semibold text-foreground">Filter Transactions</h3>
+        <Button variant="ghost" size="icon" onClick={() => setShowFilters(!showFilters)} aria-expanded={showFilters} aria-controls="filter-controls">
           <FilterIcon className="h-5 w-5" />
+          <span className="sr-only">{showFilters ? 'Hide filters' : 'Show filters'}</span>
         </Button>
-      </CardHeader>
+      </div>
       {showFilters && (
-        <CardContent className="pt-2">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+        <div id="filter-controls" className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {/* Search Term */}
             <div className="space-y-1">
               <Label htmlFor="searchTerm">Search (Notes, Amount)</Label>
@@ -103,15 +103,15 @@ export function TransactionFilterBar({ onFilterChange, initialFilters }: Transac
               >
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="all" id="type-all" />
-                  <Label htmlFor="type-all">All</Label>
+                  <Label htmlFor="type-all" className="font-normal">All</Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="income" id="type-income" />
-                  <Label htmlFor="type-income">Income</Label>
+                  <Label htmlFor="type-income" className="font-normal">Income</Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="expense" id="type-expense" />
-                  <Label htmlFor="type-expense">Expense</Label>
+                  <Label htmlFor="type-expense" className="font-normal">Expense</Label>
                 </div>
               </RadioGroup>
             </div>
@@ -199,8 +199,8 @@ export function TransactionFilterBar({ onFilterChange, initialFilters }: Transac
               <XIcon className="h-4 w-4 mr-1" /> Clear Filters
             </Button>
           </div>
-        </CardContent>
+        </div>
       )}
-    </Card>
+    </div>
   );
 }
