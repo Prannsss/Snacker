@@ -4,7 +4,6 @@
 import React, { useState, useMemo, useEffect, Suspense, lazy } from 'react';
 import { PageWrapper } from '@/components/shared/PageWrapper';
 import { PageHeader } from '@/components/shared/PageHeader';
-// import { TransactionCalendar } from '@/components/transactions/TransactionCalendar'; // Lazy loaded
 import { TransactionList } from '@/components/transactions/TransactionList';
 import { TransactionFilterBar, type TransactionFilters } from '@/components/transactions/TransactionFilter';
 import { useAppContext } from '@/contexts/AppContext';
@@ -14,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { PlusCircle } from 'lucide-react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { ThemeToggleButton } from '@/components/shared/ThemeToggleButton'; // Added import
 
 const LazyAddTransactionDialog = lazy(() => import('@/components/transactions/AddTransactionDialog'));
 const LazyOnboardingFlow = lazy(() => import('@/components/onboarding/OnboardingFlow'));
@@ -73,14 +73,17 @@ export default function TransactionsPage() {
         <PageHeader 
           title="Transactions" 
           actions={
-            <Suspense fallback={
-              <Button variant="default" size="lg" className="fixed bottom-20 right-4 md:static md:bottom-auto md:right-auto rounded-full p-4 shadow-lg md:rounded-md md:p-2 md:shadow-none" disabled>
-                <PlusCircle className="h-6 w-6 md:mr-2" />
-                <span className="hidden md:inline">Add Transaction</span>
-              </Button>
-            }>
-              <LazyAddTransactionDialog />
-            </Suspense>
+            <>
+              <Suspense fallback={
+                <Button variant="default" size="lg" className="fixed bottom-20 right-4 md:static md:bottom-auto md:right-auto rounded-full p-4 shadow-lg md:rounded-md md:p-2 md:shadow-none" disabled>
+                  <PlusCircle className="h-6 w-6 md:mr-2" />
+                  <span className="hidden md:inline">Add Transaction</span>
+                </Button>
+              }>
+                <LazyAddTransactionDialog />
+              </Suspense>
+              <ThemeToggleButton />
+            </>
           } 
         />
       </div>

@@ -3,15 +3,15 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, ListChecks, Settings, Wallet, User } from 'lucide-react'; // Added User
+import { Home, ListChecks, Settings, Wallet, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { LogoIcon } from '@/components/icons/LogoIcon';
+import { ThemeToggleButton } from './ThemeToggleButton'; // Added import
 
 const navItems = [
   { href: '/', label: 'Dashboard', icon: Home },
   { href: '/transactions', label: 'Transactions', icon: ListChecks },
   { href: '/categories', label: 'Categories', icon: Settings },
-  { href: '/profile', label: 'Profile', icon: User }, // Added Profile item
+  { href: '/profile', label: 'Profile', icon: User },
 ];
 
 export function BottomNavigation() {
@@ -73,6 +73,9 @@ export function DesktopSidebar() {
           );
         })}
       </nav>
+      <div className="p-4 mt-auto border-t">
+        <ThemeToggleButton />
+      </div>
     </aside>
   );
 }

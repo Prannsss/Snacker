@@ -17,8 +17,9 @@ import { Download, Edit3, Save } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner';
 import { LOCAL_STORAGE_KEY } from '@/lib/constants';
-import Image from 'next/image'; // Keep for NextImage if used elsewhere, not for AvatarImage src
+import Image from 'next/image';
 import { formatCurrency } from '@/lib/utils';
+import { ThemeToggleButton } from '@/components/shared/ThemeToggleButton'; // Added import
 
 
 const LazyOnboardingFlow = lazy(() => import('@/components/onboarding/OnboardingFlow'));
@@ -102,7 +103,6 @@ export default function ProfilePage() {
         });
         return;
       }
-      // Basic size check (e.g., 2MB)
       if (file.size > 2 * 1024 * 1024) {
         toast({
           title: "Upload Error",
@@ -128,7 +128,6 @@ export default function ProfilePage() {
       };
       reader.readAsDataURL(file);
     }
-    // Reset file input value to allow re-uploading the same file
     if (event.target) {
       event.target.value = "";
     }
@@ -306,7 +305,10 @@ export default function ProfilePage() {
   return (
     <PageWrapper>
       <div className="sticky top-0 z-30 bg-background/80 backdrop-blur-md shadow-sm -mx-4 md:-mx-6 pl-6 pr-4 md:pl-8 md:pr-6 py-3 mb-4">
-        <PageHeader title="Profile & Settings" />
+        <PageHeader 
+          title="Profile & Settings" 
+          actions={<ThemeToggleButton />}
+        />
       </div>
       
       <Card className="shadow-sm">
@@ -426,6 +428,3 @@ const endOfDay = (date: Date) => {
   newDate.setHours(23, 59, 59, 999);
   return newDate;
 };
-
-
-    

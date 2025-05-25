@@ -6,6 +6,7 @@ import { AppProviders } from '@/components/shared/AppProviders';
 import { Toaster } from '@/components/ui/toaster';
 import { MainAppShell } from '@/components/shared/MainAppShell';
 import { cn } from '@/lib/utils';
+import { ThemeProvider } from '@/components/shared/ThemeProvider';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -35,11 +36,17 @@ export default function RootLayout({
           'flex flex-col min-h-screen'
         )}
       >
-        <AppProviders>
-          {/* AppInitializer has been removed */}
-          <MainAppShell>{children}</MainAppShell>
-          <Toaster />
-        </AppProviders>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <AppProviders>
+            <MainAppShell>{children}</MainAppShell>
+            <Toaster />
+          </AppProviders>
+        </ThemeProvider>
       </body>
     </html>
   );

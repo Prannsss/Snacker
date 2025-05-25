@@ -5,7 +5,6 @@ import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { PageWrapper } from '@/components/shared/PageWrapper';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { SummaryCards } from '@/components/dashboard/SummaryCards';
-// import { ExpenseChart } from '@/components/dashboard/ExpenseChart'; // Lazy loaded
 import { MonthSwitcher } from '@/components/dashboard/MonthSwitcher';
 import { TransactionList } from '@/components/transactions/TransactionList';
 import { useAppContext } from '@/contexts/AppContext';
@@ -14,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { PlusCircle } from 'lucide-react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { ThemeToggleButton } from '@/components/shared/ThemeToggleButton'; // Added import
 
 const LazyAddTransactionDialog = lazy(() => import('@/components/transactions/AddTransactionDialog'));
 const LazyOnboardingFlow = lazy(() => import('@/components/onboarding/OnboardingFlow'));
@@ -31,8 +31,8 @@ export default function DashboardPage() {
     isLoadingData, 
     userHasOnboarded, 
     markOnboardingComplete,
-    username, // Get username
-    setUsername  // Get setUsername
+    username, 
+    setUsername  
   } = useAppContext();
 
   const monthlyTransactions = getTransactionsForMonth(currentMonth);
@@ -79,7 +79,10 @@ export default function DashboardPage() {
   return (
     <PageWrapper>
       <div className="sticky top-0 z-30 bg-background/80 backdrop-blur-md shadow-sm -mx-4 md:-mx-6 pl-6 pr-4 md:pl-8 md:pr-6 py-3 mb-4">
-        <PageHeader title="Dashboard" />
+        <PageHeader 
+          title="Dashboard" 
+          actions={<ThemeToggleButton />} 
+        />
       </div>
       
       <div className="flex items-center justify-between mb-4">
