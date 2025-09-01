@@ -1,5 +1,5 @@
-# Firebase Studio
+# Snacker:Expense Tracker
 
-This is a NextJS starter in Firebase Studio.
+This is a NextJS based progressive Web application using TSX
 
-To get started, take a look at src/app/page.tsx.
+To get started, run "npm run dev" on terminal
